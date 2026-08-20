@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --font-hind-siliguri: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+  --font-plus-jakarta: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --color-primary: #610000;
+  --color-primary-dark: #4A0000;
+  --color-bg: #FCF9F8;
+  --color-border: #E3BEB8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-hind-siliguri);
+  background-color: #FCF9F8;
+  color: #1B1C1C;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: #FCF9F8;
+  color: #1B1C1C;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F6F3F2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D9B7B1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #610000;
+}
+
+/* Selection */
+::selection {
+  background-color: #FFDAD4;
+  color: #610000;
+}
+
+/* Custom Utility Classes */
+.bg-warm-surface {
+  background-color: #FCF9F8;
+}
+
+.card-luxury {
+  background-color: #FFFFFF;
+  border: 1px solid #E3BEB8;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(97, 0, 0, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-luxury:hover {
+  box-shadow: 0 10px 30px -4px rgba(97, 0, 0, 0.09);
+  border-color: #D9A098;
+}
+
+.btn-primary-burgundy {
+  background-color: #610000;
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.75rem 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #610000;
+}
+
+.btn-primary-burgundy:hover {
+  background-color: #4A0000;
+  border-color: #4A0000;
+  box-shadow: 0 6px 18px rgba(97, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-secondary-outline {
+  background-color: transparent;
+  color: #610000;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.75rem 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  border: 1.5px solid #610000;
+}
+
+.btn-secondary-outline:hover {
+  background-color: #FFDAD4;
+  transform: translateY(-1px);
+}
+
+/* Glass & Soft effects */
+.glass-nav {
+  background-color: rgba(252, 249, 248, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Animations */
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s infinite ease-in-out;
+}
