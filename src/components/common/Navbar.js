@@ -11,16 +11,13 @@ import {
   Search,
   ShoppingBag,
   Heart,
-  User,
   Menu,
   X,
   Sparkles,
   Phone,
   Clock,
-  MapPin,
   ChevronRight,
-  Flower2,
-  ShieldAlert
+  Flower2
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -72,8 +69,7 @@ export default function Navbar() {
     { name: 'তোড়া বানান ✨', href: '/custom-bouquet', highlight: true },
     { name: 'গিফট কম্বো', href: '/shop?category=gifts' },
     { name: 'আমাদের সম্পর্কে', href: '/about' },
-    { name: 'যোগাযোগ', href: '/contact' },
-    { name: 'CMS অ্যাডমিন', href: '/admin', admin: true }
+    { name: 'যোগাযোগ', href: '/contact' }
   ];
 
   return (
@@ -96,10 +92,6 @@ export default function Navbar() {
               <Phone size={12} />
               ০১৭০০-০০০০০০
             </a>
-            <span className="opacity-40">|</span>
-            <Link href="/admin" className="flex items-center gap-1 opacity-85 hover:opacity-100 text-amber-200 transition-opacity">
-              CMS প্যানেল
-            </Link>
           </div>
         </div>
       </div>
@@ -147,11 +139,9 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-1.5 text-[14px] font-medium font-bengali rounded-full transition-all duration-200 ${
+                  className={`px-3.5 py-1.5 text-[14px] font-medium font-bengali rounded-full transition-all duration-200 ${
                     link.highlight
                       ? 'bg-primary-light text-primary hover:bg-primary hover:text-white font-semibold shadow-soft-sm'
-                      : link.admin
-                      ? 'text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/60 font-semibold'
                       : isActive
                       ? 'text-primary font-semibold bg-surface-soft'
                       : 'text-main-text hover:text-primary hover:bg-surface-soft/80'
@@ -205,16 +195,6 @@ export default function Navbar() {
                 </span>
               )}
             </button>
-
-            {/* Admin CMS Direct Icon Link */}
-            <Link
-              href="/admin"
-              className="p-2 text-main-text hover:text-primary rounded-full hover:bg-surface-soft transition-colors"
-              title="Admin CMS ড্যাশবোর্ড"
-              aria-label="Admin CMS"
-            >
-              <User size={20} />
-            </Link>
           </div>
         </div>
       </header>
@@ -359,8 +339,6 @@ export default function Navbar() {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-base transition-colors ${
                         link.highlight
                           ? 'bg-primary-light text-primary font-semibold'
-                          : link.admin
-                          ? 'bg-amber-50 text-amber-900 font-bold border border-amber-200'
                           : isActive
                           ? 'bg-surface-soft text-primary font-bold'
                           : 'text-main-text hover:bg-surface-soft'
@@ -387,18 +365,11 @@ export default function Navbar() {
             </div>
 
             {/* Bottom Button */}
-            <div className="pt-6 border-t border-border-subtle space-y-2">
-              <Link
-                href="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full btn-secondary-outline text-xs py-2.5 justify-center"
-              >
-                CMS অ্যাডমিন প্যানেল
-              </Link>
+            <div className="pt-6 border-t border-border-subtle">
               <Link
                 href="/custom-bouquet"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full btn-primary-burgundy text-xs py-2.5 justify-center"
+                className="w-full btn-primary-burgundy text-xs py-2.5 justify-center flex"
               >
                 তোড়া কাস্টমাইজ করুন →
               </Link>
