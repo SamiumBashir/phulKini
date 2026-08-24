@@ -6,7 +6,7 @@ import AdminDashboard from '@/components/admin/AdminDashboard';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     try {
@@ -14,8 +14,10 @@ export default function AdminPage() {
       if (auth === 'true') {
         setIsAuthenticated(true);
       }
-    } catch (e) {}
-    setIsChecking(false);
+    } catch (e) {
+      console.error('SessionStorage access error', e);
+    }
+    setIsMounted(true);
   }, []);
 
   const handleLogin = () => {
@@ -32,10 +34,11 @@ export default function AdminPage() {
     } catch (e) {}
   };
 
-  if (isChecking) {
+  if (!isMounted) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center font-bengali text-main-muted">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-[75vh] flex flex-col items-center justify-center font-bengali text-main-muted space-y-3">
+        <div className="w-9 h-9 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs text-main-muted font-medium">অ্যাডমিন প্যানেল লোড হচ্ছে...</p>
       </div>
     );
   }
