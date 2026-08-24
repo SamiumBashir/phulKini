@@ -11,7 +11,8 @@ import {
   ShieldCheck,
   Truck,
   Sparkles,
-  Heart
+  Heart,
+  UserCheck
 } from 'lucide-react';
 
 export default function Footer() {
@@ -114,8 +115,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/shop?category=gifts" className="hover:text-white transition-colors">
-                  গিফট হ্যাম্পার
+                <Link href="/admin" className="hover:text-amber-300 transition-colors text-amber-200/90 font-medium">
+                  CMS অ্যাডমিন প্যানেল ⚙️
                 </Link>
               </li>
             </ul>
@@ -144,12 +145,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="hover:text-white transition-colors">
-                  ডেলিভারি পলিসি
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-white transition-colors">
-                  রিটার্ন ও রিপ্লেসমেন্ট
+                  যোগাযোগ (Contact Us)
                 </Link>
               </li>
             </ul>
@@ -213,6 +209,10 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Link href="/admin" className="text-amber-300 hover:underline">
+              CMS লগইন
+            </Link>
+            <span>•</span>
             <Link href="/about" className="hover:text-white transition-colors">
               গোপনীয়তা নীতি
             </Link>

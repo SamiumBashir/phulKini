@@ -2,6 +2,7 @@ import './globals.css';
 import { ToastProvider } from '@/context/ToastContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { CartProvider } from '@/context/CartContext';
+import { ProductProvider } from '@/context/ProductContext';
 import ToastContainer from '@/components/common/ToastContainer';
 import Navbar from '@/components/common/Navbar';
 import Footer from '@/components/common/Footer';
@@ -32,16 +33,18 @@ export default function RootLayout({ children }) {
       </head>
       <body className="min-h-screen flex flex-col bg-[#FCF9F8] text-[#1B1C1C] antialiased selection:bg-[#FFDAD4] selection:text-[#610000]">
         <ToastProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <Navbar />
-              <main className="flex-1 pb-16 md:pb-0">{children}</main>
-              <Footer />
-              <MobileBottomNav />
-              <CartDrawer />
-              <ToastContainer />
-            </CartProvider>
-          </WishlistProvider>
+          <ProductProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <Navbar />
+                <main className="flex-1 pb-16 md:pb-0">{children}</main>
+                <Footer />
+                <MobileBottomNav />
+                <CartDrawer />
+                <ToastContainer />
+              </CartProvider>
+            </WishlistProvider>
+          </ProductProvider>
         </ToastProvider>
       </body>
     </html>

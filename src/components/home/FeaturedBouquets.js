@@ -2,15 +2,19 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { PRODUCTS } from '@/data/products';
+import { useProducts } from '@/context/ProductContext';
 import ProductCard from '@/components/shop/ProductCard';
 import ProductDetailModal from '@/components/shop/ProductDetailModal';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function FeaturedBouquets() {
+  const { products } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const featuredProducts = PRODUCTS.slice(0, 8);
+  // Show bestsellers first or active catalog slice
+  const featuredProducts = products.filter((p) => p.isBestseller).length > 0
+    ? products.filter((p) => p.isBestseller).slice(0, 8)
+    : products.slice(0, 8);
 
   return (
     <section className="py-12 sm:py-20 font-bengali">

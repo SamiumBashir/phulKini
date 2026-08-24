@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { PRODUCTS } from '@/data/products';
+import { useProducts } from '@/context/ProductContext';
 import { CATEGORIES } from '@/data/categories';
 import { OCCASIONS } from '@/data/occasions';
 import ProductCard from '@/components/shop/ProductCard';
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 export default function ShopCatalogView() {
+  const { products } = useProducts();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
   const occasionParam = searchParams.get('occasion');
@@ -30,7 +31,7 @@ export default function ShopCatalogView() {
   const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'all');
   const [selectedOccasion, setSelectedOccasion] = useState(occasionParam || 'all');
   const [sortBy, setSortBy] = useState('popular');
-  const [priceMax, setPriceMax] = useState(6500);
+  const [priceMax, setPriceMax] = useState(7500);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -41,14 +42,14 @@ export default function ShopCatalogView() {
     if (occasionParam) setSelectedOccasion(occasionParam);
     if (searchParam) setSearchQuery(searchParam);
     if (productParam) {
-      const match = PRODUCTS.find((p) => p.slug === productParam || p.id === productParam);
+      const match = products.find((p) => p.slug === productParam || p.id === productParam);
       if (match) setSelectedProduct(match);
     }
-  }, [categoryParam, occasionParam, searchParam, productParam]);
+  }, [categoryParam, occasionParam, searchParam, productParam, products]);
 
   // Filtering & Sorting Logic
   const filteredProducts = useMemo(() => {
-    let list = [...PRODUCTS];
+    let list = [...products];
 
     // Search Query
     if (searchQuery.trim()) {
@@ -58,7 +59,7 @@ export default function ShopCatalogView() {
           p.name.toLowerCase().includes(q) ||
           p.englishName.toLowerCase().includes(q) ||
           p.categoryName.toLowerCase().includes(q) ||
-          p.shortDescription.toLowerCase().includes(q)
+          (p.shortDescription && p.shortDescription.toLowerCase().includes(q))
       );
     }
 
@@ -95,13 +96,13 @@ export default function ShopCatalogView() {
     }
 
     return list;
-  }, [searchQuery, selectedCategory, selectedOccasion, priceMax, inStockOnly, sortBy]);
+  }, [products, searchQuery, selectedCategory, selectedOccasion, priceMax, inStockOnly, sortBy]);
 
   const resetFilters = () => {
     setSearchQuery('');
     setSelectedCategory('all');
     setSelectedOccasion('all');
-    setPriceMax(6500);
+    setPriceMax(7500);
     setInStockOnly(false);
     setSortBy('popular');
   };
@@ -110,7 +111,7 @@ export default function ShopCatalogView() {
     searchQuery ||
     selectedCategory !== 'all' ||
     selectedOccasion !== 'all' ||
-    priceMax < 6500 ||
+    priceMax < 7500 ||
     inStockOnly;
 
   return (
@@ -235,16 +236,16 @@ export default function ShopCatalogView() {
               </div>
               <input
                 type="range"
-                min="1500"
-                max="6500"
+                min="1000"
+                max="7500"
                 step="100"
                 value={priceMax}
                 onChange={(e) => setPriceMax(Number(e.target.value))}
                 className="w-full accent-primary cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-main-subtle mt-1 font-sans">
-                <span>৳ ১,৫০০</span>
-                <span>৳ ৬,৫০০</span>
+                <span>৳ ১,০০০</span>
+                <span>৳ ৭,৫০০</span>
               </div>
             </div>
 
@@ -354,8 +355,8 @@ export default function ShopCatalogView() {
                 </div>
                 <input
                   type="range"
-                  min="1500"
-                  max="6500"
+                  min="1000"
+                  max="7500"
                   step="100"
                   value={priceMax}
                   onChange={(e) => setPriceMax(Number(e.target.value))}

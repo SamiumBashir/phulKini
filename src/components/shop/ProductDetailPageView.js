@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { PRODUCTS } from '@/data/products';
+import { useProducts } from '@/context/ProductContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { formatBengaliPrice, toBengaliNumber, formatBengaliDate, DELIVERY_SLOTS } from '@/utils/bengaliUtils';
@@ -27,11 +27,12 @@ import {
 
 export default function ProductDetailPageView({ productId }) {
   const router = useRouter();
+  const { products } = useProducts();
   const { addToCart, openCartDrawer } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const product =
-    PRODUCTS.find((p) => p.slug === productId || p.id === productId) || PRODUCTS[0];
+    products.find((p) => p.slug === productId || p.id === productId) || products[0];
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -41,6 +42,17 @@ export default function ProductDetailPageView({ productId }) {
   const [deliverySlot, setDeliverySlot] = useState('morning');
   const [giftMessage, setGiftMessage] = useState('');
   const [selectedQuickView, setSelectedQuickView] = useState(null);
+
+  if (!product) {
+    return (
+      <div className="py-20 text-center font-bengali text-main-muted">
+        <p className="text-base font-semibold">পণ্যটি খুঁজে পাওয়া যায়নি</p>
+        <Link href="/shop" className="btn-primary-burgundy text-xs py-2 px-5 mt-3 inline-block">
+          সব ফুল দেখুন
+        </Link>
+      </div>
+    );
+  }
 
   const isFavorite = isInWishlist(product.id);
 
@@ -64,7 +76,7 @@ export default function ProductDetailPageView({ productId }) {
     router.push('/checkout');
   };
 
-  const relatedProducts = PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+  const relatedProducts = products.filter((p) => p.id !== product.id).slice(0, 4);
 
   return (
     <div className="py-8 sm:py-12 font-bengali">
