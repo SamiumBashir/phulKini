@@ -1,71 +1,133 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Flower2, Lock, KeyRound, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, ShieldCheck, Flower2, ArrowRight, AlertCircle, Mail, Key } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
 
-export default function AdminLogin({ onLogin }) {
-  const [passcode, setPasscode] = useState('');
+export default function AdminLogin({ onLoginSuccess }) {
+  const [email, setEmail] = useState('admin@phulkini.com');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { addToast } = useToast();
 
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (passcode === 'admin123' || passcode === 'phulkini2026' || passcode === 'admin') {
-      onLogin();
-    } else {
-      setError('ভুল পাসকোড! অনুগ্রহ করে সঠিক অ্যাডমিন পাসকোড দিন (ডিফল্ট: admin123)');
+    setError('');
+
+    if (!email.trim() || !password) {
+      setError('ইমেইল এবং পাসওয়ার্ড উভয়ই প্রদান করুন');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        addToast(`স্বাগতম ${data.user.name}! 🌸`, 'success');
+        if (onLoginSuccess) {
+          onLoginSuccess(data.user);
+        }
+      } else {
+        setError(data.message || 'ভুল তথ্য! আবার চেষ্টা করুন।');
+        addToast(data.message || 'লগইন ব্যর্থ হয়েছে', 'error');
+      }
+    } catch (err) {
+      setError('সার্ভারে সংযোগ স্থাপন করা সম্ভব হয়নি');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4 font-bengali">
-      <div className="card-luxury p-8 sm:p-10 max-w-md w-full bg-surface-white border-2 border-primary/20 shadow-soft-xl space-y-6">
+      <div className="w-full max-w-md bg-white border border-[#E8DDD9] rounded-3xl shadow-luxury p-8 sm:p-10 relative overflow-hidden">
         
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white mx-auto shadow-soft">
-            <Flower2 size={28} className="text-primary-light" />
+        {/* Decorative background glow */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="text-center space-y-3 mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white mx-auto shadow-md transform -rotate-3">
+            <Flower2 size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-main-text">ফুল কিনি CMS অ্যাডমিন</h1>
-          <p className="text-xs text-main-muted">
-            পণ্য আপলোড, পরিবর্তন ও ক্যাটালগ নিয়ন্ত্রণের জন্য লগইন করুন।
-          </p>
+          <div>
+            <h1 className="text-2xl font-bold text-main-text">ফুল কিনি অ্যাডমিন CMS</h1>
+            <p className="text-xs text-main-muted mt-1">
+              নিরাপদ সার্ভার-সাইড ভেরিফিকেশন প্যানেল (Phul Kini v2)
+            </p>
+          </div>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2.5 animate-fade-in">
+            <AlertCircle size={16} className="shrink-0 text-red-500" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4 text-xs sm:text-sm">
           <div>
-            <label className="block text-xs font-semibold text-main-text mb-1 flex items-center gap-1">
-              <KeyRound size={13} className="text-primary" />
-              <span>অ্যাডমিন পাসকোড (Admin Passcode):</span>
+            <label className="block font-semibold text-main-text mb-1.5">
+              অ্যাডমিন ইমেইল
             </label>
-            <input
-              type="password"
-              placeholder="পাসকোড লিখুন (যেমন: admin123)"
-              value={passcode}
-              onChange={(e) => {
-                setPasscode(e.target.value);
-                setError('');
-              }}
-              className="w-full p-3 bg-surface-soft border border-border-muted rounded-xl text-sm text-main-text focus:outline-none focus:border-primary font-mono text-center tracking-widest"
-              autoFocus
-            />
-            {error && (
-              <p className="text-xs text-red-600 mt-1.5 text-center leading-snug">{error}</p>
-            )}
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@phulkini.com"
+                className="w-full p-3.5 pl-10 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text font-sans focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                required
+              />
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-main-muted" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-main-text mb-1.5">
+              সিক্রেট পাসওয়ার্ড
+            </label>
+            <div className="relative">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full p-3.5 pl-10 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text font-sans focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                required
+              />
+              <Key size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-main-muted" />
+            </div>
           </div>
 
           <button
             type="submit"
-            className="w-full btn-primary-burgundy py-3 text-sm font-bold shadow-soft flex items-center justify-center gap-2"
+            disabled={isLoading}
+            className="w-full btn-primary-burgundy py-3.5 rounded-xl text-sm font-bold shadow-soft flex items-center justify-center gap-2 mt-6 disabled:opacity-50 transition-all cursor-pointer"
           >
-            <span>ড্যাশবোর্ডে প্রবেশ করুন</span>
-            <ArrowRight size={16} />
+            {isLoading ? (
+              <span>যাচাই হচ্ছে...</span>
+            ) : (
+              <>
+                <span>লগইন করুন</span>
+                <ArrowRight size={17} />
+              </>
+            )}
           </button>
         </form>
 
-        <div className="pt-2 border-t border-border-subtle text-center text-xs text-main-subtle flex items-center justify-center gap-1.5">
+        <div className="mt-8 pt-6 border-t border-[#F0E6E3] flex items-center justify-center gap-2 text-[11px] text-main-muted">
           <ShieldCheck size={14} className="text-accent-green" />
-          <span>নিরাপদ ফ্লোরাল বুটিক ম্যানেজমেন্ট কনসোল</span>
+          <span>256-bit এনক্রিপশন ও HttpOnly সিকিউর সেশন</span>
         </div>
       </div>
     </div>

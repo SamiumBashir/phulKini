@@ -3,166 +3,149 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from './ToastContext';
 
-const CartContext = createContext(null);
+const CartContext = createContext();
 
-export const COUPONS = {
-  'PHUL10': { code: 'PHUL10', discountPercent: 10, type: 'percent', minSpend: 0, label: '১০% বিশেষ ছাড়' },
-  'BOSONTO20': { code: 'BOSONTO20', discountPercent: 20, type: 'percent', minSpend: 3000, label: '২০% বসন্ত অফার (ন্যূনতম ৳৩,০০০)' },
-  'LOVE2026': { code: 'LOVE2026', discountAmount: 500, type: 'fixed', minSpend: 2500, label: '৳৫০০ ফ্ল্যাট ছাড় (ন্যূনতম ৳২,৫০০)' }
-};
+const CART_STORAGE_KEY = 'phul_kini_cart';
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [deliveryInfo, setDeliveryInfo] = useState({
-    fullName: '',
-    phone: '',
-    altPhone: '',
-    address: '',
-    area: 'বনানী / গুলশান',
-    deliveryDate: new Date().toISOString().split('T')[0],
-    deliverySlot: 'morning',
-    giftMessage: '',
-    senderName: '',
-    instructions: '',
-    paymentMethod: 'bkash'
-  });
   const [lastCompletedOrder, setLastCompletedOrder] = useState(null);
+  const [isHydrated, setIsHydrated] = useState(false);
   const { addToast } = useToast();
 
-  // Load from localStorage
+  // Load cart from localStorage on mount
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem('phul_kini_cart');
-      if (savedCart) {
-        setItems(JSON.parse(savedCart));
-      }
-      const savedCoupon = localStorage.getItem('phul_kini_coupon');
-      if (savedCoupon && COUPONS[savedCoupon]) {
-        setAppliedCoupon(COUPONS[savedCoupon]);
+      const stored = localStorage.getItem(CART_STORAGE_KEY);
+      if (stored) {
+        setItems(JSON.parse(stored));
       }
     } catch (e) {
-      console.error('Failed to restore cart from localStorage', e);
+      console.error('Failed to load cart from localStorage', e);
+    } finally {
+      setIsHydrated(true);
     }
   }, []);
 
-  // Save to localStorage
+  // Save cart to localStorage on changes
   useEffect(() => {
+    if (!isHydrated) return;
     try {
-      localStorage.setItem('phul_kini_cart', JSON.stringify(items));
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
     } catch (e) {
-      console.error('Failed to persist cart', e);
+      console.error('Failed to save cart to localStorage', e);
     }
-  }, [items]);
+  }, [items, isHydrated]);
 
-  const addToCart = (product, quantity = 1, customDetails = null) => {
-    setItems((prev) => {
-      const cartItemId = customDetails 
-        ? `${product.id}-${Date.now()}` 
-        : product.id;
+  // Add Item to Cart
+  const addItem = (product, quantity = 1, options = {}) => {
+    setItems((prevItems) => {
+      const cartId = options.customId || `${product.id || product.slug}`;
+      const existingIndex = prevItems.findIndex((item) => item.cartId === cartId);
 
-      const existingIndex = prev.findIndex((item) => item.cartId === (customDetails ? cartItemId : product.id));
-
-      if (existingIndex > -1 && !customDetails) {
-        const updated = [...prev];
-        updated[existingIndex].quantity += quantity;
-        return updated;
+      if (existingIndex > -1) {
+        const newItems = [...prevItems];
+        newItems[existingIndex] = {
+          ...newItems[existingIndex],
+          quantity: newItems[existingIndex].quantity + quantity
+        };
+        return newItems;
       } else {
         const newItem = {
-          ...product,
-          cartId: customDetails ? cartItemId : product.id,
+          cartId,
+          id: product.id || product._id,
+          productId: product.id || product._id,
+          slug: product.slug,
+          name: product.name,
+          englishName: product.englishName || '',
+          price: product.price,
+          originalPrice: product.originalPrice || null,
+          image: product.images && product.images[0] ? product.images[0] : product.image,
+          images: product.images || [product.image],
+          category: product.category,
           quantity,
-          customDetails
+          customDetails: options.customDetails || null
         };
-        return [...prev, newItem];
+        return [...prevItems, newItem];
       }
     });
 
-    addToast('আপনার কার্টে যোগ করা হয়েছে ✓', 'success');
+    addToast(`“${product.name}” কার্টে যোগ করা হয়েছে! 🌸`, 'success');
   };
 
-  const removeFromCart = (cartId) => {
-    setItems((prev) => {
-      const removed = prev.find((item) => item.cartId === cartId);
-      if (removed) {
-        addToast(`“${removed.name}” কার্ট থেকে সরানো হয়েছে`, 'info');
-      }
-      return prev.filter((item) => item.cartId !== cartId);
-    });
+  // Remove Item
+  const removeItem = (cartId) => {
+    setItems((prev) => prev.filter((item) => item.cartId !== cartId));
+    addToast('পণ্যটি কার্ট থেকে সরানো হয়েছে', 'info');
   };
 
-  const updateQuantity = (cartId, newQuantity) => {
-    if (newQuantity <= 0) {
-      removeFromCart(cartId);
+  // Update Quantity
+  const updateQuantity = (cartId, quantity) => {
+    if (quantity <= 0) {
+      removeItem(cartId);
       return;
     }
     setItems((prev) =>
-      prev.map((item) =>
-        item.cartId === cartId ? { ...item, quantity: newQuantity } : item
-      )
+      prev.map((item) => (item.cartId === cartId ? { ...item, quantity } : item))
     );
   };
 
+  // Clear Cart
   const clearCart = () => {
     setItems([]);
     setAppliedCoupon(null);
-    try {
-      localStorage.removeItem('phul_kini_cart');
-      localStorage.removeItem('phul_kini_coupon');
-    } catch (e) {}
   };
 
-  const applyCoupon = (code) => {
-    const cleanCode = (code || '').trim().toUpperCase();
-    const coupon = COUPONS[cleanCode];
-
-    if (!coupon) {
-      return { success: false, message: 'অকার্যকর কুপন কোড! অনুগ্রহ করে সঠিক কোড দিন।' };
+  // Server-Validated Coupon Apply
+  const applyCouponCode = async (code) => {
+    if (!code || !code.trim()) {
+      addToast('অনুগ্রহ করে কুপন কোড লিখুন', 'error');
+      return false;
     }
 
-    if (coupon.minSpend && subtotal < coupon.minSpend) {
-      return {
-        success: false,
-        message: `এই কুপন ব্যবহারের জন্য সর্বনিম্ন ৳ ${coupon.minSpend.toLocaleString('en-IN')} অর্ডার প্রয়োজন।`
-      };
-    }
-
-    setAppliedCoupon(coupon);
     try {
-      localStorage.setItem('phul_kini_coupon', cleanCode);
-    } catch (e) {}
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: code.trim(),
+          orderSubtotal: subtotal
+        })
+      });
 
-    addToast(`কুপন কোড “${cleanCode}” সফলভাবে যুক্ত হয়েছে! 🎉`, 'success');
-    return { success: true, message: 'কুপন সফলভাবে অ্যাপ্লাই করা হয়েছে!' };
+      const data = await res.json();
+
+      if (data.success) {
+        setAppliedCoupon({
+          code: data.code,
+          discount: data.discount,
+          type: data.type
+        });
+        addToast(data.message || 'কুপন সফলভাবে যুক্ত হয়েছে! 🌸', 'success');
+        return true;
+      } else {
+        addToast(data.message || 'অবৈধ কুপন কোড', 'error');
+        return false;
+      }
+    } catch (e) {
+      addToast('কুপন যাচাই করতে সমস্যা হয়েছে', 'error');
+      return false;
+    }
   };
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
-    try {
-      localStorage.removeItem('phul_kini_coupon');
-    } catch (e) {}
-    addToast('কুপন বাতিল করা হয়েছে', 'info');
+    addToast('কুপন কোড সরানো হয়েছে', 'info');
   };
 
   // Calculations
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  
-  // Delivery Fee: ৳120 standard inside Dhaka, free over ৳5000
-  const deliveryFee = subtotal > 0 ? (subtotal >= 5000 ? 0 : 120) : 0;
-
-  // Discount Calculation
-  let discountAmount = 0;
-  if (appliedCoupon && subtotal > 0) {
-    if (appliedCoupon.type === 'percent') {
-      discountAmount = Math.round((subtotal * appliedCoupon.discountPercent) / 100);
-    } else if (appliedCoupon.type === 'fixed') {
-      discountAmount = Math.min(subtotal, appliedCoupon.discountAmount);
-    }
-  }
-
-  const grandTotal = Math.max(0, subtotal - discountAmount + deliveryFee);
+  const totalItemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const deliveryFee = subtotal >= 5000 || subtotal === 0 ? 0 : 120;
+  const discountAmount = appliedCoupon ? appliedCoupon.discount : 0;
+  const grandTotal = Math.max(0, subtotal + deliveryFee - discountAmount);
 
   return (
     <CartContext.Provider
@@ -175,19 +158,17 @@ export function CartProvider({ children }) {
         grandTotal,
         appliedCoupon,
         isDrawerOpen,
-        setIsDrawerOpen,
         openCartDrawer: () => setIsDrawerOpen(true),
         closeCartDrawer: () => setIsDrawerOpen(false),
-        addToCart,
-        removeFromCart,
+        lastCompletedOrder,
+        setIsDrawerOpen,
+        setLastCompletedOrder,
+        addItem,
+        removeItem,
         updateQuantity,
         clearCart,
-        applyCoupon,
-        removeCoupon,
-        deliveryInfo,
-        setDeliveryInfo,
-        lastCompletedOrder,
-        setLastCompletedOrder
+        applyCouponCode,
+        removeCoupon
       }}
     >
       {children}

@@ -27,9 +27,50 @@ export default function OrderConfirmationView() {
   const { lastCompletedOrder } = useCart();
 
   const [order, setOrder] = useState(lastCompletedOrder);
-  const [currentStep, setCurrentStep] = useState(2); // 1: Confirmed, 2: Preparing, 3: On the way, 4: Delivered
+  const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
+    // If orderId is in URL, attempt to fetch authoritative record from API
+    if (urlOrderId) {
+      fetch(`/api/orders/${urlOrderId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.order) {
+            const dbOrd = data.order;
+            setOrder({
+              orderId: dbOrd.orderNumber,
+              createdAt: dbOrd.createdAt,
+              deliveryInfo: {
+                fullName: dbOrd.delivery.name,
+                phone: dbOrd.delivery.phone,
+                address: dbOrd.delivery.address,
+                area: dbOrd.delivery.area,
+                deliveryDate: dbOrd.delivery.date,
+                deliverySlot: dbOrd.delivery.timeSlot,
+                giftMessage: dbOrd.delivery.giftMessage
+              },
+              items: dbOrd.items.map((it) => ({
+                name: it.nameSnapshot,
+                price: it.unitPrice,
+                quantity: it.quantity,
+                images: [it.imageSnapshot]
+              })),
+              subtotal: dbOrd.pricing.subtotal,
+              deliveryFee: dbOrd.pricing.deliveryFee,
+              discountAmount: dbOrd.pricing.discount,
+              grandTotal: dbOrd.pricing.total,
+              status: dbOrd.status
+            });
+
+            if (dbOrd.status === 'CONFIRMED') setCurrentStep(1);
+            if (dbOrd.status === 'PROCESSING') setCurrentStep(2);
+            if (dbOrd.status === 'OUT_FOR_DELIVERY') setCurrentStep(3);
+            if (dbOrd.status === 'DELIVERED') setCurrentStep(4);
+          }
+        })
+        .catch(() => {});
+    }
+
     if (!order) {
       try {
         const saved = localStorage.getItem('phul_kini_last_order');
@@ -38,37 +79,32 @@ export default function OrderConfirmationView() {
         }
       } catch (e) {}
     }
-  }, [order]);
+  }, [urlOrderId]);
 
-  // Fallback demo order if visited directly
+  // Fallback demo order if visited directly without state
   const orderDetails = order || {
     orderId: urlOrderId || 'PK-829415',
     createdAt: new Date().toISOString(),
     deliveryInfo: {
-      fullName: 'রাফিদ হাসান',
+      fullName: 'সম্মানিত গ্রাহক',
       phone: '০১৭০০-০০০০০০',
-      address: 'হাউজ ২৪, রোড ৭, ব্লক সি, বনানী, ঢাকা',
+      address: 'বনানী, ঢাকা',
       area: 'বনানী',
       deliveryDate: new Date().toISOString().split('T')[0],
       deliverySlot: 'morning',
-      giftMessage: 'ভালোবাসা হোক ফুলের ভাষায়! শুভ জন্মদিন অনুষ্কা।'
+      giftMessage: 'ভালোবাসা হোক ফুলের ভাষায়!'
     },
     items: [
       {
-        cartId: 'midnight-romance',
         name: 'মিডনাইট রোমান্স',
-        categoryName: 'প্রিমিয়াম রোজ',
         price: 3500,
-        quantity: 1,
-        images: [
-          'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop'
-        ]
+        quantity: 1
       }
     ],
     subtotal: 3500,
     deliveryFee: 120,
-    discountAmount: 350,
-    grandTotal: 3270
+    discountAmount: 0,
+    grandTotal: 3620
   };
 
   const trackingSteps = [
@@ -83,21 +119,21 @@ export default function OrderConfirmationView() {
       id: 2,
       title: 'ফ্লোরিস্ট তোড়া সাজাচ্ছেন',
       subtitle: 'তাজা ফুল নির্বাচন ও হস্তশিল্পে র‍্যাপিং',
-      time: 'সকাল ৯:৪৫ (চলমান)',
+      time: 'চলমান',
       icon: Flower2
     },
     {
       id: 3,
       title: 'ডেলিভারির জন্য বের হয়েছে',
       subtitle: 'তাপমাত্রা নিয়ন্ত্রিত বিশেষ বাক্সে রাইডার',
-      time: 'আনুমানিক সকাল ১০:৩০',
+      time: 'শীঘ্রই',
       icon: Truck
     },
     {
       id: 4,
       title: 'ডেলিভারি সম্পন্ন',
       subtitle: 'প্রিয়জনের হাতে উপহার প্রদান',
-      time: 'আনুমানিক সকাল ১১:০০',
+      time: 'আনুমানিক',
       icon: Heart
     }
   ];
@@ -117,7 +153,7 @@ export default function OrderConfirmationView() {
           </div>
 
           <span className="inline-block px-3 py-1 bg-primary-light text-primary text-xs font-bold rounded-full font-sans tracking-wide">
-            অর্ডার আইডি: #{orderDetails.orderId}
+            অর্ডার নম্বর: #{orderDetails.orderId}
           </span>
 
           <h1 className="text-2xl sm:text-4xl font-bold text-main-text">
@@ -128,21 +164,29 @@ export default function OrderConfirmationView() {
             আমরা আপনার অর্ডারটি অত্যন্ত যত্ন সহকারে প্রস্তুত করছি। ফুল ডেলিভারির প্রতিটি আপডেট আপনি লাইভ এখানে দেখতে পারবেন।
           </p>
 
-          <div className="flex justify-center gap-3 pt-2">
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
             <button
               onClick={handlePrint}
-              className="btn-secondary-outline text-xs py-2 px-5 flex items-center gap-1.5"
+              className="btn-secondary-outline text-xs py-2 px-5 flex items-center gap-1.5 cursor-pointer"
             >
               <Printer size={14} />
               <span>রসিদ প্রিন্ট করুন</span>
             </button>
 
             <Link
+              href={`/track-order`}
+              className="btn-secondary-outline text-xs py-2 px-5 flex items-center gap-1.5"
+            >
+              <Truck size={14} />
+              <span>লাইভ ট্র্যাক পেজ</span>
+            </Link>
+
+            <Link
               href="/shop"
               className="btn-primary-burgundy text-xs py-2 px-5 flex items-center gap-1.5"
             >
               <ShoppingBag size={14} />
-              <span>আরও শপিং করুন</span>
+              <span>আরও ফুল দেখুন</span>
             </Link>
           </div>
         </div>

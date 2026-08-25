@@ -1,404 +1,489 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useProducts } from '@/context/ProductContext';
-import { CATEGORIES } from '@/data/categories';
-import ProductFormModal from './ProductFormModal';
-import { formatBengaliPrice, toBengaliNumber } from '@/utils/bengaliUtils';
+import React, { useState, useEffect } from 'react';
 import {
+  Flower2,
+  Package,
+  ShoppingBag,
+  TrendingUp,
   Plus,
-  Search,
-  Filter,
   Edit2,
   Trash2,
   CheckCircle2,
   XCircle,
-  RotateCcw,
+  Search,
+  LogOut,
   Sparkles,
   ExternalLink,
-  LogOut,
-  Flower2,
-  Eye,
-  AlertTriangle
+  ShieldCheck,
+  AlertTriangle,
+  Clock,
+  Truck,
+  Users
 } from 'lucide-react';
+import { formatBengaliPrice, toBengaliNumber } from '@/utils/bengaliUtils';
+import { useToast } from '@/context/ToastContext';
+import ProductFormModal from './ProductFormModal';
 
-export default function AdminDashboard({ onLogout }) {
-  const { products, addProduct, updateProduct, deleteProduct, toggleStock, resetToDefaults } =
-    useProducts();
+export default function AdminDashboard({ user, onLogout }) {
+  const { addToast } = useToast();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [stockFilter, setStockFilter] = useState('all');
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-
-  // Filtered Products
-  const filteredProducts = products.filter((p) => {
-    // Search
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const matches =
-        p.name.toLowerCase().includes(q) ||
-        p.englishName.toLowerCase().includes(q) ||
-        p.categoryName.toLowerCase().includes(q);
-      if (!matches) return false;
-    }
-
-    // Category
-    if (selectedCategory !== 'all' && p.category !== selectedCategory) {
-      return false;
-    }
-
-    // Stock Filter
-    if (stockFilter === 'in_stock' && !p.inStock) return false;
-    if (stockFilter === 'out_of_stock' && p.inStock) return false;
-
-    return true;
+  const [activeTab, setActiveTab] = useState('products'); // 'products', 'orders', 'analytics'
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    deliveredOrders: 0,
+    totalProducts: 0,
+    lowStockProducts: 0
   });
 
-  // Summary Metrics
-  const totalCount = products.length;
-  const inStockCount = products.filter((p) => p.inStock).length;
-  const outOfStockCount = totalCount - inStockCount;
-  const bestsellerCount = products.filter((p) => p.isBestseller).length;
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleOpenAdd = () => {
-    setEditingProduct(null);
-    setIsModalOpen(true);
-  };
+  // Filters & Modals
+  const [productSearch, setProductSearch] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState('ALL');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
-  const handleOpenEdit = (product) => {
-    setEditingProduct(product);
-    setIsModalOpen(true);
-  };
+  // Fetch Dashboard Data
+  const fetchDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      const [analyticsRes, productsRes, ordersRes] = await Promise.all([
+        fetch('/api/admin/analytics').then(r => r.json()),
+        fetch('/api/products?limit=100').then(r => r.json()),
+        fetch('/api/orders?limit=100').then(r => r.json())
+      ]);
 
-  const handleSave = (formData) => {
-    if (editingProduct) {
-      updateProduct(editingProduct.id, formData);
-    } else {
-      addProduct(formData);
+      if (analyticsRes.success) setStats(analyticsRes.stats);
+      if (productsRes.success) setProducts(productsRes.products);
+      if (ordersRes.success) setOrders(ordersRes.orders);
+    } catch (e) {
+      console.error('Error fetching admin data:', e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDelete = (id) => {
-    deleteProduct(id);
-    setDeleteConfirmId(null);
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  // Handle Logout
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      addToast('সফলভাবে লগআউট করা হয়েছে', 'info');
+      if (onLogout) onLogout();
+    } catch (e) {}
   };
 
+  // Toggle Product Availability
+  const handleToggleStock = async (product) => {
+    try {
+      const res = await fetch(`/api/products/${product.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isAvailable: !product.isAvailable })
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast(
+          product.isAvailable ? 'পণ্য সাময়িকভাবে স্টক-আউট করা হয়েছে' : 'পণ্য স্টকে অন্তর্ভুক্ত করা হয়েছে',
+          'info'
+        );
+        fetchDashboardData();
+      }
+    } catch (e) {}
+  };
+
+  // Delete Product
+  const handleDeleteProduct = async (id, name) => {
+    if (!window.confirm(`আপনি কি নিশ্চিতভাবে “${name}” ডিলিট করতে চান?`)) return;
+
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        addToast('পণ্যটি সফলভাবে মুছে ফেলা হয়েছে', 'success');
+        fetchDashboardData();
+      }
+    } catch (e) {}
+  };
+
+  // Update Order Status
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast(`অর্ডার স্ট্যাটাস আপডেট: ${newStatus}`, 'success');
+        fetchDashboardData();
+      }
+    } catch (e) {}
+  };
+
+  const filteredProducts = products.filter(
+    (p) =>
+      p.name?.toLowerCase().includes(productSearch.toLowerCase()) ||
+      p.englishName?.toLowerCase().includes(productSearch.toLowerCase()) ||
+      p.categoryName?.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
+  const filteredOrders = orders.filter((o) => {
+    if (orderStatusFilter === 'ALL') return true;
+    return o.status === orderStatusFilter;
+  });
+
   return (
-    <div className="py-8 sm:py-12 font-bengali min-h-screen bg-surface-bg">
-      <div className="max-w-container mx-auto px-4 md:px-8 space-y-8">
-        
-        {/* Dashboard Top Header */}
-        <div className="card-luxury p-6 sm:p-8 bg-surface-white flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-soft">
-              <Flower2 size={26} className="text-primary-light" />
+    <div className="min-h-screen bg-[#FCF9F8] font-bengali pb-20">
+      
+      {/* Top Admin Header */}
+      <header className="bg-[#1C1010] text-[#E8DDD9] border-b border-[#3B2828] sticky top-0 z-30">
+        <div className="max-w-container mx-auto px-4 md:px-8 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white">
+              <Flower2 size={19} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-main-text">
-                  ফুল কিনি CMS কন্ট্রোল প্যানেল
-                </h1>
-                <span className="text-xs bg-primary-light text-primary font-bold px-2.5 py-0.5 rounded-full font-sans">
-                  v1.0 Live
+                <span className="font-bold text-white text-base">ফুল কিনি CMS</span>
+                <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-sans font-bold">
+                  v2.0
                 </span>
               </div>
-              <p className="text-xs text-main-muted mt-1">
-                ওয়েবসাইটের পণ্যসমূহ আপলোড, সম্পাদনা, মূল্য নির্ধারণ ও স্টক পরিচালনা করুন।
+              <p className="text-[11px] text-[#A89692]">
+                লগইন: {user?.name || 'অ্যাডমিন'} ({user?.role || 'SUPER_ADMIN'})
               </p>
             </div>
           </div>
 
-          {/* Header Action Buttons */}
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <Link
-              href="/shop"
+          <div className="flex items-center gap-3">
+            <a
+              href="/"
               target="_blank"
-              className="btn-secondary-outline text-xs py-2 px-4 flex items-center gap-1.5"
+              rel="noreferrer"
+              className="text-xs text-[#E8DDD9] hover:text-white px-3 py-1.5 rounded-lg bg-[#2A1717] border border-[#482D2D] flex items-center gap-1.5 transition-colors"
             >
-              <ExternalLink size={14} />
-              <span>লাইভ শপ দেখুন</span>
-            </Link>
+              <span>শপ দেখুন</span>
+              <ExternalLink size={13} />
+            </a>
 
             <button
-              onClick={handleOpenAdd}
-              className="btn-primary-burgundy text-xs sm:text-sm py-2.5 px-5 flex items-center gap-2 font-bold shadow-soft"
+              onClick={handleLogout}
+              className="text-xs text-red-300 hover:text-red-100 px-3 py-1.5 rounded-lg bg-red-950/50 border border-red-800 flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Plus size={16} />
-              <span>নতুন ফুল যোগ করুন</span>
-            </button>
-
-            <button
-              onClick={onLogout}
-              className="p-2.5 text-main-muted hover:text-red-600 rounded-xl hover:bg-surface-soft border border-border-subtle transition-colors"
-              title="লগআউট"
-            >
-              <LogOut size={16} />
+              <LogOut size={13} />
+              <span>লগআউট</span>
             </button>
           </div>
         </div>
+      </header>
 
-        {/* 4 Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <div className="card-luxury p-5 bg-surface-white space-y-1">
-            <span className="text-xs text-main-muted font-medium">মোট পণ্য সংখ্যা</span>
-            <div className="text-2xl sm:text-3xl font-bold text-primary font-sans">
-              {toBengaliNumber(totalCount)}টি
+      <div className="max-w-container mx-auto px-4 md:px-8 pt-8 space-y-8">
+        
+        {/* Metric Cards Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="card-luxury p-5 bg-white border border-[#E8DDD9] flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <TrendingUp size={24} />
             </div>
-            <p className="text-[11px] text-main-subtle">ক্যাটালগে সক্রিয় পণ্য</p>
+            <div>
+              <p className="text-xs text-main-muted font-medium">মোট বিক্রয় রেভিনিউ</p>
+              <h3 className="text-xl font-bold text-main-text mt-0.5">
+                {formatBengaliPrice(stats.totalRevenue)}
+              </h3>
+            </div>
           </div>
 
-          <div className="card-luxury p-5 bg-surface-white space-y-1">
-            <span className="text-xs text-accent-green font-medium">ইন-স্টক (উপলব্ধ)</span>
-            <div className="text-2xl sm:text-3xl font-bold text-accent-green font-sans">
-              {toBengaliNumber(inStockCount)}টি
+          <div className="card-luxury p-5 bg-white border border-[#E8DDD9] flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Clock size={24} />
             </div>
-            <p className="text-[11px] text-main-subtle">সরাসরি অর্ডারযোগ্য</p>
+            <div>
+              <p className="text-xs text-main-muted font-medium">অপেক্ষমাণ অর্ডার</p>
+              <h3 className="text-xl font-bold text-main-text mt-0.5">
+                {toBengaliNumber(stats.pendingOrders)}টি
+              </h3>
+            </div>
           </div>
 
-          <div className="card-luxury p-5 bg-surface-white space-y-1">
-            <span className="text-xs text-amber-700 font-medium">বেস্টসেলার কালেকশন</span>
-            <div className="text-2xl sm:text-3xl font-bold text-amber-600 font-sans">
-              {toBengaliNumber(bestsellerCount)}টি
+          <div className="card-luxury p-5 bg-white border border-[#E8DDD9] flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-primary-light text-primary flex items-center justify-center shrink-0">
+              <ShoppingBag size={24} />
             </div>
-            <p className="text-[11px] text-main-subtle">টপ ট্রেন্ডিং তোড়া</p>
+            <div>
+              <p className="text-xs text-main-muted font-medium">মোট অর্ডার সম্পন্ন</p>
+              <h3 className="text-xl font-bold text-main-text mt-0.5">
+                {toBengaliNumber(stats.totalOrders)}টি
+              </h3>
+            </div>
           </div>
 
-          <div className="card-luxury p-5 bg-surface-white space-y-1">
-            <span className="text-xs text-red-600 font-medium">আউট-অফ-স্টক</span>
-            <div className="text-2xl sm:text-3xl font-bold text-red-600 font-sans">
-              {toBengaliNumber(outOfStockCount)}টি
+          <div className="card-luxury p-5 bg-white border border-[#E8DDD9] flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <Flower2 size={24} />
             </div>
-            <p className="text-[11px] text-main-subtle">স্টক শেষ হওয়া পণ্য</p>
+            <div>
+              <p className="text-xs text-main-muted font-medium">লাইভ ফুল ক্যাটালগ</p>
+              <h3 className="text-xl font-bold text-main-text mt-0.5">
+                {toBengaliNumber(stats.totalProducts || products.length)}টি
+              </h3>
+            </div>
           </div>
         </div>
 
-        {/* Filter & Search Bar */}
-        <div className="card-luxury p-4 sm:p-5 bg-surface-white flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="relative w-full md:max-w-md">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-main-subtle" />
-            <input
-              type="text"
-              placeholder="পণ্যের নাম বা ক্যাটাগরি দিয়ে খুঁজুন..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-surface-soft border border-border-muted rounded-xl text-xs sm:text-sm text-main-text focus:outline-none focus:border-primary"
-            />
-          </div>
-
-          <div className="flex items-center gap-2.5 w-full md:w-auto overflow-x-auto">
-            {/* Category Select */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-surface-soft border border-border-muted rounded-xl px-3 py-2 text-xs text-main-text focus:outline-none focus:border-primary cursor-pointer"
-            >
-              <option value="all">সব ক্যাটাগরি</option>
-              {CATEGORIES.filter((c) => c.slug !== 'all').map((c) => (
-                <option key={c.id} value={c.slug}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Stock Select */}
-            <select
-              value={stockFilter}
-              onChange={(e) => setStockFilter(e.target.value)}
-              className="bg-surface-soft border border-border-muted rounded-xl px-3 py-2 text-xs text-main-text focus:outline-none focus:border-primary cursor-pointer"
-            >
-              <option value="all">সব স্টক স্ট্যাটাস</option>
-              <option value="in_stock">শুধুমাত্র ইন-স্টক</option>
-              <option value="out_of_stock">আউট-অফ-স্টক</option>
-            </select>
-
-            {/* Reset to Defaults */}
-            <button
-              onClick={() => {
-                if (window.confirm('আপনি কি নিশ্চিত যে সমস্ত পণ্য ডিফল্ট ক্যাটালগে রিসেট করতে চান?')) {
-                  resetToDefaults();
-                }
-              }}
-              className="px-3 py-2 border border-border-muted rounded-xl text-xs text-main-muted hover:text-primary hover:bg-surface-soft flex items-center gap-1 shrink-0"
-              title="ডিফল্ট ক্যাটালগ রিস্টোর করুন"
-            >
-              <RotateCcw size={13} />
-              <span className="hidden sm:inline">রিসেট</span>
-            </button>
-          </div>
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-2 border-b border-[#E8DDD9] pb-2">
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'products'
+                ? 'bg-primary text-white shadow-soft'
+                : 'text-main-muted hover:text-main-text hover:bg-white'
+            }`}
+          >
+            🌸 ফুল ও তোড়া পরিচালনা ({toBengaliNumber(products.length)})
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'orders'
+                ? 'bg-primary text-white shadow-soft'
+                : 'text-main-muted hover:text-main-text hover:bg-white'
+            }`}
+          >
+            📦 কাস্টমার অর্ডার্স ({toBengaliNumber(orders.length)})
+          </button>
         </div>
 
-        {/* Products Table Container */}
-        <div className="card-luxury bg-surface-white overflow-hidden shadow-soft">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-surface-soft border-b border-border-subtle text-main-text font-bold uppercase text-[11px] tracking-wider">
-                <tr>
-                  <th className="py-4 px-4 sm:px-6">পণ্য (Product)</th>
-                  <th className="py-4 px-4">ক্যাটাগরি</th>
-                  <th className="py-4 px-4">মূল্য</th>
-                  <th className="py-4 px-4">স্টক স্ট্যাটাস</th>
-                  <th className="py-4 px-4">হাইলাইটস</th>
-                  <th className="py-4 px-4 sm:px-6 text-right">অ্যাকশন</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-subtle text-main-muted">
-                {filteredProducts.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-main-muted">
-                      <p className="text-sm font-semibold">কোনো পণ্য পাওয়া যায়নি</p>
-                      <p className="text-xs text-main-subtle mt-1">
-                        নতুন পণ্য যোগ করতে উপরের "নতুন ফুল যোগ করুন" বাটনে ক্লিক করুন।
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredProducts.map((prod) => (
-                    <tr key={prod.id} className="hover:bg-surface-soft/60 transition-colors">
-                      {/* Product details & thumbnail */}
-                      <td className="py-3.5 px-4 sm:px-6">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={prod.images && prod.images[0] ? prod.images[0] : prod.image}
-                            alt={prod.name}
-                            className="w-12 h-12 rounded-xl object-cover border border-border-subtle shrink-0"
-                          />
-                          <div>
-                            <h4 className="font-bold text-sm text-main-text">{prod.name}</h4>
-                            <p className="text-[11px] text-main-subtle font-sans">{prod.englishName}</p>
-                          </div>
-                        </div>
-                      </td>
+        {/* Products Management View */}
+        {activeTab === 'products' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="relative w-full sm:w-80">
+                <input
+                  type="text"
+                  placeholder="পণ্য বা ক্যাটাগরি খুঁজুন..."
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-[#D9C8C4] rounded-xl text-xs text-main-text focus:outline-none focus:border-primary"
+                />
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-main-muted" />
+              </div>
 
-                      {/* Category */}
-                      <td className="py-3.5 px-4">
-                        <span className="inline-block px-2.5 py-1 bg-surface-soft border border-border-muted rounded-full text-xs font-semibold text-main-text">
-                          {prod.categoryName}
-                        </span>
-                      </td>
+              <button
+                onClick={() => {
+                  setEditingProduct(null);
+                  setIsModalOpen(true);
+                }}
+                className="w-full sm:w-auto btn-primary-burgundy px-5 py-2.5 text-xs font-bold shadow-soft flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>নতুন ফুল যোগ করুন</span>
+              </button>
+            </div>
 
-                      {/* Price */}
-                      <td className="py-3.5 px-4 font-bold text-primary text-sm">
-                        {formatBengaliPrice(prod.price)}
-                        {prod.originalPrice && (
-                          <span className="text-[11px] text-main-subtle line-through block font-normal">
-                            {formatBengaliPrice(prod.originalPrice)}
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Stock Switch */}
-                      <td className="py-3.5 px-4">
-                        <button
-                          onClick={() => toggleStock(prod.id)}
-                          className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                            prod.inStock
-                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                              : 'bg-red-100 text-red-800 border border-red-300'
-                          }`}
-                        >
-                          {prod.inStock ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
-                          <span>{prod.inStock ? 'ইন-স্টক' : 'আউট-অফ-স্টক'}</span>
-                        </button>
-                      </td>
-
-                      {/* Highlights / Badges */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex flex-wrap gap-1">
-                          {prod.isBestseller && (
-                            <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded">
-                              বেস্টসেলার
-                            </span>
-                          )}
-                          {prod.isNew && (
-                            <span className="bg-blue-100 text-blue-900 text-[10px] font-bold px-2 py-0.5 rounded">
-                              নতুন
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Action Buttons */}
-                      <td className="py-3.5 px-4 sm:px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link
-                            href={`/shop?product=${prod.slug}`}
-                            target="_blank"
-                            className="p-1.5 text-main-muted hover:text-primary rounded-lg hover:bg-surface-soft transition-colors"
-                            title="ভিউ দেখুন"
-                          >
-                            <Eye size={15} />
-                          </Link>
-
-                          <button
-                            onClick={() => handleOpenEdit(prod)}
-                            className="p-1.5 text-main-muted hover:text-primary rounded-lg hover:bg-surface-soft transition-colors"
-                            title="সম্পাদনা করুন"
-                          >
-                            <Edit2 size={15} />
-                          </button>
-
-                          <button
-                            onClick={() => setDeleteConfirmId(prod.id)}
-                            className="p-1.5 text-main-muted hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                            title="পণ্যটি মুছে ফেলুন"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
+            {/* Products Table */}
+            <div className="card-luxury bg-white border border-[#E8DDD9] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#FCF9F8] border-b border-[#E8DDD9] text-main-muted font-bold uppercase tracking-wider">
+                    <tr>
+                      <th className="p-4">ছবি ও নাম</th>
+                      <th className="p-4">ক্যাটাগরি</th>
+                      <th className="p-4">মূল্য</th>
+                      <th className="p-4">স্টক</th>
+                      <th className="p-4">স্ট্যাটাস</th>
+                      <th className="p-4 text-right">অ্যাকশন</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-[#F0E6E3]">
+                    {filteredProducts.map((prod) => {
+                      const img = prod.images && prod.images[0] ? prod.images[0] : prod.image;
+                      return (
+                        <tr key={prod.id} className="hover:bg-[#FCF9F8]/60 transition-colors">
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={img}
+                                alt={prod.name}
+                                className="w-12 h-12 rounded-xl object-cover border border-[#E8DDD9] shrink-0"
+                              />
+                              <div>
+                                <span className="font-bold text-main-text block line-clamp-1">{prod.name}</span>
+                                {prod.englishName && (
+                                  <span className="text-[11px] text-main-muted font-sans block">{prod.englishName}</span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className="px-2.5 py-1 rounded-full bg-[#FCF9F8] border border-[#E8DDD9] text-[11px] font-medium text-main-text">
+                              {prod.categoryName || prod.category}
+                            </span>
+                          </td>
+                          <td className="p-4 font-bold text-primary text-sm">
+                            {formatBengaliPrice(prod.price)}
+                          </td>
+                          <td className="p-4">
+                            <span className="font-sans font-semibold text-main-text">
+                              {toBengaliNumber(prod.stock || 50)}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <button
+                              onClick={() => handleToggleStock(prod)}
+                              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1 cursor-pointer ${
+                                prod.isAvailable
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-red-50 text-red-700 border border-red-200'
+                              }`}
+                            >
+                              {prod.isAvailable ? (
+                                <>
+                                  <CheckCircle2 size={12} />
+                                  <span>ইন স্টক</span>
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle size={12} />
+                                  <span>স্টক-আউট</span>
+                                </>
+                              )}
+                            </button>
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingProduct(prod);
+                                  setIsModalOpen(true);
+                                }}
+                                className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                title="সম্পাদনা করুন"
+                              >
+                                <Edit2 size={15} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(prod.id, prod.name)}
+                                className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                title="মুছে ফেলুন"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Form Modal (Add / Edit) */}
-        {isModalOpen && (
-          <ProductFormModal
-            product={editingProduct}
-            onClose={() => setIsModalOpen(false)}
-            onSave={handleSave}
-          />
         )}
 
-        {/* Delete Confirmation Modal */}
-        {deleteConfirmId && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-            <div className="card-luxury p-6 max-w-sm w-full bg-surface-white space-y-4 text-center">
-              <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
-                <AlertTriangle size={24} />
-              </div>
-              <h3 className="text-base font-bold text-main-text">
-                পণ্যটি মুছে ফেলতে চান?
-              </h3>
-              <p className="text-xs text-main-muted">
-                এই পণ্যটি মুছে ফেললে তা লাইভ ওয়েবসাইট ও শপ ক্যাটালগ থেকে তৎক্ষণাৎ অদৃশ্য হয়ে যাবে।
-              </p>
-              <div className="flex items-center justify-center gap-3 pt-2">
+        {/* Orders Management View */}
+        {activeTab === 'orders' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              {['ALL', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'].map((st) => (
                 <button
-                  onClick={() => setDeleteConfirmId(null)}
-                  className="px-4 py-2 border border-border-muted rounded-full text-xs font-semibold text-main-muted"
+                  key={st}
+                  onClick={() => setOrderStatusFilter(st)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-all ${
+                    orderStatusFilter === st
+                      ? 'bg-primary text-white'
+                      : 'bg-white border border-[#D9C8C4] text-main-muted'
+                  }`}
                 >
-                  বাতিল
+                  {st === 'ALL' ? 'সব অর্ডার' : st}
                 </button>
-                <button
-                  onClick={() => handleDelete(deleteConfirmId)}
-                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-xs font-bold shadow-sm"
-                >
-                  হ্যাঁ, ডিলিট করুন
-                </button>
+              ))}
+            </div>
+
+            <div className="card-luxury bg-white border border-[#E8DDD9] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#FCF9F8] border-b border-[#E8DDD9] text-main-muted font-bold uppercase tracking-wider">
+                    <tr>
+                      <th className="p-4">অর্ডার নম্বর</th>
+                      <th className="p-4">গ্রাহক ও ফোন</th>
+                      <th className="p-4">ডেলিভারি ঠিকানা ও স্লট</th>
+                      <th className="p-4">মোট বিল</th>
+                      <th className="p-4">পেমেন্ট</th>
+                      <th className="p-4">বর্তমান স্ট্যাটাস</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#F0E6E3]">
+                    {filteredOrders.map((ord) => (
+                      <tr key={ord.id} className="hover:bg-[#FCF9F8]/60 transition-colors">
+                        <td className="p-4 font-bold text-primary font-sans">
+                          {ord.orderNumber}
+                        </td>
+                        <td className="p-4">
+                          <span className="font-bold text-main-text block">{ord.customer?.name}</span>
+                          <span className="text-[11px] text-main-muted font-sans block">{ord.customer?.phone}</span>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-main-text block line-clamp-1">{ord.delivery?.address}</span>
+                          <span className="text-[11px] text-main-muted block">
+                            {ord.delivery?.area} • {ord.delivery?.date}
+                          </span>
+                        </td>
+                        <td className="p-4 font-bold text-main-text">
+                          {formatBengaliPrice(ord.pricing?.total)}
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            ord.payment?.status === 'PAID'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {ord.payment?.method?.toUpperCase()} ({ord.payment?.status})
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <select
+                            value={ord.status}
+                            onChange={(e) => handleUpdateOrderStatus(ord.id, e.target.value)}
+                            className="p-1.5 bg-[#FCF9F8] border border-[#D9C8C4] rounded-lg text-xs font-semibold text-main-text focus:outline-none focus:border-primary cursor-pointer"
+                          >
+                            <option value="CONFIRMED">CONFIRMED</option>
+                            <option value="PROCESSING">PROCESSING</option>
+                            <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY</option>
+                            <option value="DELIVERED">DELIVERED</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Add / Edit Product Modal */}
+      <ProductFormModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingProduct(null);
+        }}
+        productToEdit={editingProduct}
+        onSaveSuccess={fetchDashboardData}
+      />
     </div>
   );
 }

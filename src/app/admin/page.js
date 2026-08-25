@@ -3,49 +3,49 @@
 import React, { useState, useEffect } from 'react';
 import AdminLogin from '@/components/admin/AdminLogin';
 import AdminDashboard from '@/components/admin/AdminDashboard';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const checkAuth = async () => {
     try {
-      const auth = sessionStorage.getItem('phulkini_admin_auth');
-      if (auth === 'true') {
-        setIsAuthenticated(true);
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.authenticated && data.user) {
+        setCurrentUser(data.user);
+      } else {
+        setCurrentUser(null);
       }
     } catch (e) {
-      console.error('SessionStorage access error', e);
+      setCurrentUser(null);
+    } finally {
+      setIsLoading(false);
     }
-    setIsMounted(true);
+  };
+
+  useEffect(() => {
+    checkAuth();
   }, []);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-    try {
-      sessionStorage.setItem('phulkini_admin_auth', 'true');
-    } catch (e) {}
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    try {
-      sessionStorage.removeItem('phulkini_admin_auth');
-    } catch (e) {}
-  };
-
-  if (!isMounted) {
+  if (isLoading) {
     return (
-      <div className="min-h-[75vh] flex flex-col items-center justify-center font-bengali text-main-muted space-y-3">
-        <div className="w-9 h-9 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs text-main-muted font-medium">অ্যাডমিন প্যানেল লোড হচ্ছে...</p>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3 font-bengali">
+        <Loader2 size={36} className="animate-spin text-primary" />
+        <p className="text-xs text-main-muted">নিরাপদ সেশন যাচাই করা হচ্ছে...</p>
       </div>
     );
   }
 
-  return isAuthenticated ? (
-    <AdminDashboard onLogout={handleLogout} />
-  ) : (
-    <AdminLogin onLogin={handleLogin} />
+  if (!currentUser) {
+    return <AdminLogin onLoginSuccess={(user) => setCurrentUser(user)} />;
+  }
+
+  return (
+    <AdminDashboard
+      user={currentUser}
+      onLogout={() => setCurrentUser(null)}
+    />
   );
 }

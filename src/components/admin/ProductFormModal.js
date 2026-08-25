@@ -1,391 +1,376 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CATEGORIES } from '@/data/categories';
-import { OCCASIONS } from '@/data/occasions';
+import { X, Save, Flower2, Sparkles, AlertCircle } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
 import CloudinaryUploader from './CloudinaryUploader';
-import { formatBengaliPrice, toBengaliNumber } from '@/utils/bengaliUtils';
-import { X, Sparkles, Plus, Check, Flower2, Save } from 'lucide-react';
 
-export default function ProductFormModal({ product, onClose, onSave }) {
-  const isEditing = !!product;
+export default function ProductFormModal({ isOpen, onClose, productToEdit, onSaveSuccess }) {
+  const { addToast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
     englishName: '',
     category: 'bouquets',
+    categoryName: 'ফুলের তোড়া',
     price: '',
     originalPrice: '',
-    rating: 5.0,
-    reviewsCount: 12,
-    inStock: true,
-    isBestseller: false,
-    isNew: true,
+    stock: 50,
     shortDescription: '',
     description: '',
-    stemCount: '',
-    fragrance: 'তাজা ও মিষ্টি প্রাকৃতিক সুবাস',
+    stemCount: '১২টি তাজা ফুল ও ফিলার',
     lifespan: '৫-৭ দিন',
-    wrapping: 'সিগনেচার লাক্সারি ম্যাট বার্গান্ডি র‍্যাপিং',
-    occasions: ['love', 'birthday'],
+    fragrance: 'মিষ্টি প্রাকৃতিক সুবাস',
+    wrapping: 'সিগনেচার বার্গান্ডি ম্যাট র‍্যাপিং',
+    isFeatured: false,
+    isBestseller: false,
+    isNew: true,
+    isAvailable: true,
     images: []
   });
 
-  const [errors, setErrors] = useState({});
-
   useEffect(() => {
-    if (product) {
+    if (productToEdit) {
       setFormData({
-        name: product.name || '',
-        englishName: product.englishName || '',
-        category: product.category || 'bouquets',
-        price: product.price ? String(product.price) : '',
-        originalPrice: product.originalPrice ? String(product.originalPrice) : '',
-        rating: product.rating || 5.0,
-        reviewsCount: product.reviewsCount || 12,
-        inStock: product.inStock !== undefined ? product.inStock : true,
-        isBestseller: !!product.isBestseller,
-        isNew: !!product.isNew,
-        shortDescription: product.shortDescription || '',
-        description: product.description || '',
-        stemCount: product.stemCount || '',
-        fragrance: product.fragrance || 'তাজা ও মিষ্টি প্রাকৃতিক সুবাস',
-        lifespan: product.lifespan || '৫-৭ দিন',
-        wrapping: product.wrapping || 'সিগনেচার লাক্সারি ম্যাট বার্গান্ডি র‍্যাপিং',
-        occasions: product.occasions || ['love', 'birthday'],
-        images: product.images || []
+        name: productToEdit.name || '',
+        englishName: productToEdit.englishName || '',
+        category: productToEdit.category || 'bouquets',
+        categoryName: productToEdit.categoryName || 'ফুলের তোড়া',
+        price: productToEdit.price || '',
+        originalPrice: productToEdit.originalPrice || '',
+        stock: productToEdit.stock !== undefined ? productToEdit.stock : 50,
+        shortDescription: productToEdit.shortDescription || '',
+        description: productToEdit.description || '',
+        stemCount: productToEdit.stemCount || '১২টি তাজা ফুল ও ফিলার',
+        lifespan: productToEdit.lifespan || '৫-৭ দিন',
+        fragrance: productToEdit.fragrance || 'মিষ্টি প্রাকৃতিক সুবাস',
+        wrapping: productToEdit.wrapping || 'সিগনেচার বার্গান্ডি ম্যাট র‍্যাপিং',
+        isFeatured: !!productToEdit.isFeatured,
+        isBestseller: !!productToEdit.isBestseller,
+        isNew: !!productToEdit.isNew,
+        isAvailable: productToEdit.isAvailable !== false,
+        images: productToEdit.images || (productToEdit.image ? [productToEdit.image] : [])
+      });
+    } else {
+      setFormData({
+        name: '',
+        englishName: '',
+        category: 'bouquets',
+        categoryName: 'ফুলের তোড়া',
+        price: '',
+        originalPrice: '',
+        stock: 50,
+        shortDescription: '',
+        description: '',
+        stemCount: '১২টি তাজা ফুল ও ফিলার',
+        lifespan: '৫-৭ দিন',
+        fragrance: 'মিষ্টি প্রাকৃতিক সুবাস',
+        wrapping: 'সিগনেচার বার্গান্ডি ম্যাট র‍্যাপিং',
+        isFeatured: false,
+        isBestseller: false,
+        isNew: true,
+        isAvailable: true,
+        images: []
       });
     }
-  }, [product]);
+  }, [productToEdit, isOpen]);
 
-  const validate = () => {
-    const errs = {};
-    if (!formData.name.trim()) errs.name = 'পণ্যের বাংলা নাম আবশ্যক';
-    if (!formData.price || Number(formData.price) <= 0) errs.price = 'সঠিক মূল্য উল্লেখ করুন';
-    if (formData.images.length === 0) errs.images = 'কমপক্ষে ১টি ছবি আপলোড করুন';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
+  if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    setError('');
 
-    const selectedCategoryObj = CATEGORIES.find((c) => c.slug === formData.category);
+    if (!formData.name.trim()) {
+      setError('পণ্যের বাংলা নাম আবশ্যক');
+      return;
+    }
+    if (!formData.price || Number(formData.price) <= 0) {
+      setError('সঠিক বিক্রয়মূল্য লিখুন');
+      return;
+    }
+    if (formData.images.length === 0) {
+      setError('কমপক্ষে ১টি ছবি আপলোড করুন');
+      return;
+    }
 
-    const payload = {
-      ...formData,
-      categoryName: selectedCategoryObj ? selectedCategoryObj.name : 'ফুলের তোড়া',
-      price: Number(formData.price),
-      originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null
-    };
+    setIsSubmitting(true);
 
-    onSave(payload);
-    onClose();
-  };
-
-  const toggleOccasion = (tag) => {
-    setFormData((prev) => {
-      const exists = prev.occasions.includes(tag);
-      return {
-        ...prev,
-        occasions: exists
-          ? prev.occasions.filter((t) => t !== tag)
-          : [...prev.occasions, tag]
+    try {
+      const payload = {
+        name: formData.name.trim(),
+        englishName: formData.englishName.trim(),
+        category: formData.category,
+        categoryName: formData.category === 'roses' ? 'গোলাপ' : formData.category === 'tulips' ? 'টিউলিপ' : formData.category === 'lilies' ? 'লিলি' : 'ফুলের তোড়া',
+        price: Number(formData.price),
+        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
+        stock: Number(formData.stock),
+        shortDescription: formData.shortDescription,
+        description: formData.description,
+        stemCount: formData.stemCount,
+        lifespan: formData.lifespan,
+        fragrance: formData.fragrance,
+        wrapping: formData.wrapping,
+        isFeatured: formData.isFeatured,
+        isBestseller: formData.isBestseller,
+        isNew: formData.isNew,
+        isAvailable: formData.isAvailable,
+        images: formData.images
       };
-    });
+
+      const url = productToEdit?.id
+        ? `/api/products/${productToEdit.id}`
+        : '/api/products';
+      const method = productToEdit?.id ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        addToast(
+          productToEdit ? 'পণ্য সফলভাবে আপডেট হয়েছে! 🌸' : 'নতুন ফুল শপে যুক্ত হয়েছে! 🌸',
+          'success'
+        );
+        if (onSaveSuccess) onSaveSuccess();
+        onClose();
+      } else {
+        setError(data.message || 'পণ্য সংরক্ষণ করা যায়নি');
+      }
+    } catch (err) {
+      setError('সার্ভারে সমস্যা হয়েছে');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fade-in font-bengali">
-      <div
-        className="relative bg-surface-white border border-border-muted rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-soft-xl animate-scale-in"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Modal Header */}
-        <div className="p-6 border-b border-border-subtle bg-surface-bg flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white">
-              <Flower2 size={20} />
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto font-bengali">
+      <div className="bg-white border border-[#E8DDD9] w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden my-8 animate-fade-in">
+        
+        {/* Header */}
+        <div className="bg-gradient-to-r from-primary to-[#420000] p-6 text-white flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+              <Flower2 size={22} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-main-text">
-                {isEditing ? 'পণ্য সম্পাদনা (Edit Product)' : 'নতুন ফুল / পণ্য আপলোড (Add Product)'}
+              <h2 className="text-xl font-bold">
+                {productToEdit ? 'পণ্য সম্পাদনা করুন' : 'নতুন ফুল / তোড়া যুক্ত করুন'}
               </h2>
-              <p className="text-xs text-main-muted">
-                {isEditing ? 'পণ্যের তথ্য ও ছবি পরিবর্তন করুন' : 'Cloudinary ইমেজ সহ নতুন ফুলের তথ্য দিন'}
-              </p>
+              <p className="text-xs text-white/80">CMS প্রোডাক্ট ম্যানেজমেন্ট</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 text-main-muted hover:text-primary rounded-xl hover:bg-surface-soft transition-colors"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6 text-xs sm:text-sm">
-          
-          {/* Section 1: Basic Product Information */}
-          <div className="space-y-4">
-            <h3 className="font-bold text-base text-main-text border-b border-border-subtle pb-2">
-              ১. সাধারণ তথ্য (Basic Info)
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block font-semibold text-main-text mb-1">
-                  বাংলা নাম <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="যেমন: মিডনাইট রোমান্স বুকে"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={`w-full p-3 bg-surface-soft border rounded-xl text-main-text focus:outline-none focus:border-primary ${
-                    errors.name ? 'border-red-500 bg-red-50' : 'border-border-muted'
-                  }`}
-                />
-                {errors.name && <p className="text-[11px] text-red-600 mt-1">{errors.name}</p>}
-              </div>
-
-              <div>
-                <label className="block font-semibold text-main-text mb-1">
-                  ইংরেজি নাম (English Name)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Midnight Romance Bouquet"
-                  value={formData.englishName}
-                  onChange={(e) => setFormData({ ...formData, englishName: e.target.value })}
-                  className="w-full p-3 bg-surface-soft border border-border-muted rounded-xl text-main-text focus:outline-none focus:border-primary font-sans"
-                />
-              </div>
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6 max-h-[75vh] overflow-y-auto">
+          {error && (
+            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+              <AlertCircle size={16} className="shrink-0" />
+              <span>{error}</span>
             </div>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block font-semibold text-main-text mb-1">
-                  ক্যাটাগরি <span className="text-red-600">*</span>
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full p-3 bg-surface-soft border border-border-muted rounded-xl text-main-text focus:outline-none focus:border-primary cursor-pointer"
-                >
-                  {CATEGORIES.filter((c) => c.slug !== 'all').map((c) => (
-                    <option key={c.id} value={c.slug}>
-                      {c.name} ({c.englishName})
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Cloudinary Image Uploader */}
+          <CloudinaryUploader
+            initialImages={formData.images}
+            onImagesUploaded={(imgs) => setFormData({ ...formData, images: imgs })}
+          />
 
-              <div>
-                <label className="block font-semibold text-main-text mb-1">
-                  বিক্রয় মূল্য (৳) <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="number"
-                  placeholder="যেমন: 3500"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className={`w-full p-3 bg-surface-soft border rounded-xl text-main-text font-sans font-bold text-primary focus:outline-none focus:border-primary ${
-                    errors.price ? 'border-red-500 bg-red-50' : 'border-border-muted'
-                  }`}
-                />
-                {errors.price && <p className="text-[11px] text-red-600 mt-1">{errors.price}</p>}
-              </div>
-
-              <div>
-                <label className="block font-semibold text-main-text mb-1">
-                  আগের / নিয়মিত মূল্য (ঐচ্ছিক)
-                </label>
-                <input
-                  type="number"
-                  placeholder="যেমন: 4200"
-                  value={formData.originalPrice}
-                  onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                  className="w-full p-3 bg-surface-soft border border-border-muted rounded-xl text-main-text font-sans focus:outline-none focus:border-primary"
-                />
-              </div>
-            </div>
-
-            {/* Live Discount Calculator Preview */}
-            {formData.originalPrice && Number(formData.originalPrice) > Number(formData.price) && (
-              <div className="p-2.5 rounded-xl bg-accent-green-light border border-accent-green/30 text-xs text-accent-green font-semibold flex items-center justify-between">
-                <span>
-                  🎉 স্বয়ংক্রিয় ডিসকাউন্ট ব্যাজ:{' '}
-                  <strong>
-                    -{toBengaliNumber(Math.round(((formData.originalPrice - formData.price) / formData.originalPrice) * 100))}% ছাড়
-                  </strong>
-                </span>
-                <span>সাশ্রয়: {formatBengaliPrice(formData.originalPrice - formData.price)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Section 2: Cloudinary Image Uploader */}
-          <div className="space-y-4 pt-2">
-            <h3 className="font-bold text-base text-main-text border-b border-border-subtle pb-2 flex items-center justify-between">
-              <span>২. পণ্যের ছবি আপলোড (Cloudinary Upload)</span>
-              <span className="text-xs text-primary font-normal">ক্লাউডিনারি ইন্টিগ্রেশন</span>
-            </h3>
-
-            <CloudinaryUploader
-              images={formData.images}
-              onChange={(imgs) => setFormData({ ...formData, images: imgs })}
-            />
-            {errors.images && <p className="text-[11px] text-red-600">{errors.images}</p>}
-          </div>
-
-          {/* Section 3: Descriptions & Composition Details */}
-          <div className="space-y-4 pt-2">
-            <h3 className="font-bold text-base text-main-text border-b border-border-subtle pb-2">
-              ৩. বিবরণ ও ফ্লোরাল স্পেসিফিকেশন
-            </h3>
-
+          {/* Basic Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
             <div>
               <label className="block font-semibold text-main-text mb-1">
-                সংক্ষিপ্ত বিবরণ (Short Description)
+                পণ্যের বাংলা নাম <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="যেমন: গভীর লাল ডাচ গোলাপের এক রাজকীয় সমাহার।"
-                value={formData.shortDescription}
-                onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                className="w-full p-3 bg-surface-soft border border-border-muted rounded-xl text-main-text focus:outline-none focus:border-primary"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="যেমন: রক্ত গোলাপ তোড়া"
+                className="w-full p-3 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text focus:outline-none focus:border-primary"
+                required
               />
             </div>
 
             <div>
               <label className="block font-semibold text-main-text mb-1">
-                পূর্ণাঙ্গ বিবরণ (Full Description)
+                ইংরেজি নাম (ঐচ্ছিক)
               </label>
-              <textarea
-                rows={3}
-                placeholder="পণ্যের বিস্তারিত বিবরণ লিখুন..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full p-3 bg-surface-soft border border-border-muted rounded-xl text-main-text focus:outline-none focus:border-primary resize-none"
+              <input
+                type="text"
+                value={formData.englishName}
+                onChange={(e) => setFormData({ ...formData, englishName: e.target.value })}
+                placeholder="Red Rose Luxury Bouquet"
+                className="w-full p-3 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text font-sans focus:outline-none focus:border-primary"
+              />
+            </div>
+          </div>
+
+          {/* Category & Stock */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+            <div>
+              <label className="block font-semibold text-main-text mb-1">
+                ক্যাটাগরি
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full p-3 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text focus:outline-none focus:border-primary cursor-pointer"
+              >
+                <option value="bouquets">ফুলের তোড়া (Bouquets)</option>
+                <option value="roses">গোলাপ (Roses)</option>
+                <option value="tulips">টিউলিপ (Tulips)</option>
+                <option value="lilies">লিলি (Lilies)</option>
+                <option value="sunflowers">সূর্যমুখী (Sunflowers)</option>
+                <option value="gifts">গিফট ও হ্যাম্পার</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-main-text mb-1">
+                স্টক পরিমাণ
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                className="w-full p-3 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text font-sans focus:outline-none focus:border-primary"
+              />
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+            <div>
+              <label className="block font-semibold text-main-text mb-1">
+                বিক্রয়মূল্য (৳) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                placeholder="2500"
+                className="w-full p-3 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text font-sans focus:outline-none focus:border-primary"
+                required
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block font-semibold text-main-text mb-1">
-                  ফুলের উপাদান ও স্টেম সংখ্যা
-                </label>
-                <input
-                  type="text"
-                  placeholder="যেমন: ২৪টি ডাচ লাল গোলাপ ও জিপসি"
-                  value={formData.stemCount}
-                  onChange={(e) => setFormData({ ...formData, stemCount: e.target.value })}
-                  className="w-full p-3 bg-surface-soft border border-border-muted rounded-xl text-main-text focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-main-text mb-1">
-                  স্থায়িত্ব (Lifespan)
-                </label>
-                <input
-                  type="text"
-                  placeholder="যেমন: ৫-৭ দিন সতেজ থাকে"
-                  value={formData.lifespan}
-                  onChange={(e) => setFormData({ ...formData, lifespan: e.target.value })}
-                  className="w-full p-3 bg-surface-soft border border-border-muted rounded-xl text-main-text focus:outline-none focus:border-primary"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 4: Occasions & Badges */}
-          <div className="space-y-4 pt-2">
-            <h3 className="font-bold text-base text-main-text border-b border-border-subtle pb-2">
-              ৪. ব্যাজ ও উপলক্ষ ট্যাগ
-            </h3>
-
-            {/* Badges Toggle */}
-            <div className="flex flex-wrap gap-4 text-xs font-semibold">
-              <label className="flex items-center gap-2 cursor-pointer bg-surface-soft p-2.5 px-4 rounded-xl border border-border-muted">
-                <input
-                  type="checkbox"
-                  checked={formData.inStock}
-                  onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
-                  className="accent-primary"
-                />
-                <span>ইন-স্টক (In Stock)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer bg-surface-soft p-2.5 px-4 rounded-xl border border-border-muted">
-                <input
-                  type="checkbox"
-                  checked={formData.isBestseller}
-                  onChange={(e) => setFormData({ ...formData, isBestseller: e.target.checked })}
-                  className="accent-primary"
-                />
-                <span>বেস্টসেলার ব্যাজ (Bestseller ✨)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer bg-surface-soft p-2.5 px-4 rounded-xl border border-border-muted">
-                <input
-                  type="checkbox"
-                  checked={formData.isNew}
-                  onChange={(e) => setFormData({ ...formData, isNew: e.target.checked })}
-                  className="accent-primary"
-                />
-                <span>নতুন কালেকশন (New Arrival)</span>
-              </label>
-            </div>
-
-            {/* Occasion Tags */}
             <div>
-              <label className="block font-semibold text-main-text mb-2">
-                উপলক্ষ (যেকোনো এক বা একাধিক নির্বাচন করুন):
+              <label className="block font-semibold text-main-text mb-1">
+                পূর্বের মূল্য (ছাড় দেখাতে)
               </label>
-              <div className="flex flex-wrap gap-2">
-                {OCCASIONS.map((occ) => {
-                  const isSelected = formData.occasions.includes(occ.recommendedTag);
-                  return (
-                    <button
-                      key={occ.id}
-                      type="button"
-                      onClick={() => toggleOccasion(occ.recommendedTag)}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                        isSelected
-                          ? 'bg-primary text-white shadow-soft-sm'
-                          : 'bg-surface-soft text-main-muted border border-border-muted hover:border-primary'
-                      }`}
-                    >
-                      <span>{occ.icon}</span>
-                      <span>{occ.title}</span>
-                      {isSelected && <Check size={12} />}
-                    </button>
-                  );
-                })}
-              </div>
+              <input
+                type="number"
+                min="0"
+                value={formData.originalPrice}
+                onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                placeholder="2800"
+                className="w-full p-3 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text font-sans focus:outline-none focus:border-primary"
+              />
             </div>
           </div>
 
-          {/* Modal Footer Actions */}
-          <div className="pt-6 border-t border-border-subtle flex items-center justify-end gap-3 sticky bottom-0 bg-surface-white py-3">
+          {/* Descriptions */}
+          <div className="space-y-3 text-xs sm:text-sm">
+            <div>
+              <label className="block font-semibold text-main-text mb-1">
+                সংক্ষিপ্ত বিবরণ
+              </label>
+              <input
+                type="text"
+                value={formData.shortDescription}
+                onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                placeholder="সদ্য ফোটা প্রিমিয়াম রক্ত গোলাপের ক্লাসিক তোড়া"
+                className="w-full p-3 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-main-text mb-1">
+                বিস্তারিত বিবরণ
+              </label>
+              <textarea
+                rows={3}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="এই তোড়াটি প্রতিটি বিশেষ মুহূর্তকে আরও স্মরণীয় করে তোলে..."
+                className="w-full p-3 bg-[#FCF9F8] border border-[#D9C8C4] rounded-xl text-main-text focus:outline-none focus:border-primary resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Badges & Checkboxes */}
+          <div className="flex flex-wrap items-center gap-6 p-4 rounded-2xl bg-[#FCF9F8] border border-[#D9C8C4] text-xs font-semibold text-main-text">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isFeatured}
+                onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                className="accent-primary w-4 h-4"
+              />
+              <span>ফিচার্ড ফুল (হোমপেজে দেখাও)</span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isBestseller}
+                onChange={(e) => setFormData({ ...formData, isBestseller: e.target.checked })}
+                className="accent-primary w-4 h-4"
+              />
+              <span>বেস্টসেলার ব্যাজ</span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isAvailable}
+                onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
+                className="accent-primary w-4 h-4"
+              />
+              <span>বিক্রয়ের জন্য উন্মুক্ত (Active)</span>
+            </label>
+          </div>
+
+          {/* Submit Action */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E8DDD9]">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-full border border-border-muted text-xs sm:text-sm font-semibold text-main-muted hover:text-primary hover:bg-surface-soft transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-[#D9C8C4] text-xs font-semibold text-main-muted hover:bg-[#FCF9F8] transition-colors cursor-pointer"
             >
               বাতিল
             </button>
             <button
               type="submit"
-              className="btn-primary-burgundy text-xs sm:text-sm py-2.5 px-8 font-bold shadow-soft flex items-center gap-2"
+              disabled={isSubmitting}
+              className="btn-primary-burgundy px-7 py-2.5 text-xs font-bold shadow-soft flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
-              <Save size={16} />
-              <span>{isEditing ? 'পরিবর্তন সংরক্ষণ করুন' : 'পণ্য আপলোড করুন'}</span>
+              {isSubmitting ? (
+                <span>সংরক্ষণ হচ্ছে...</span>
+              ) : (
+                <>
+                  <Save size={15} />
+                  <span>{productToEdit ? 'আপডেট করুন' : 'পণ্য প্রকাশ করুন'}</span>
+                </>
+              )}
             </button>
           </div>
         </form>

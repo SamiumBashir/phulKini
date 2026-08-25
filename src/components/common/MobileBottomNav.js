@@ -68,7 +68,7 @@ export default function MobileBottomNav() {
           }
 
           return (
-            <Link key={idx} href={item.href}>
+            <Link key={idx} href={item.href || '/'}>
               {content}
             </Link>
           );

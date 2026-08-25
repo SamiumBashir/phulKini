@@ -19,9 +19,8 @@ import {
   MessageSquare,
   ArrowRight,
   ChevronLeft,
-  CheckCircle2,
   Lock,
-  Wallet
+  Loader2
 } from 'lucide-react';
 
 export default function CheckoutView() {
@@ -50,7 +49,7 @@ export default function CheckoutView() {
     deliverySlot: 'morning',
     giftMessage: '',
     instructions: '',
-    paymentMethod: 'bkash', // 'bkash', 'nagad', 'card', 'cod'
+    paymentMethod: 'cod', // 'bkash', 'nagad', 'card', 'cod'
     bkashNumber: '',
     nagadNumber: ''
   });
@@ -60,10 +59,18 @@ export default function CheckoutView() {
 
   const paymentOptions = [
     {
+      id: 'cod',
+      name: 'ক্যাশ অন ডেলিভারি',
+      subtitle: 'পণ্য হাতে পেয়ে টাকা দিন',
+      badge: 'জনপ্রিয়',
+      color: '#374639',
+      icon: '💵'
+    },
+    {
       id: 'bkash',
       name: 'বিকাশ (bKash)',
-      subtitle: 'মোবাইল ব্যাংকিং (অটোমেটেড পেমেন্ট)',
-      badge: 'জনপ্রিয়',
+      subtitle: 'মোবাইল ব্যাংকিং (অটোমেটেড গেটওয়ে)',
+      badge: 'ইনস্ট্যান্ট',
       color: '#E2136E',
       icon: '📱'
     },
@@ -71,25 +78,17 @@ export default function CheckoutView() {
       id: 'nagad',
       name: 'নগদ (Nagad)',
       subtitle: 'মোবাইল ব্যাংকিং',
-      badge: 'ইনস্ট্যান্ট',
+      badge: 'সহজ',
       color: '#F7941D',
       icon: '⚡'
     },
     {
       id: 'card',
       name: 'কার্ড পেমেন্ট',
-      subtitle: 'ভিসা, মাস্টারকার্ড ও অ্যামেক্স',
+      subtitle: 'ভিসা, মাস্টারকার্ড ও অন্যান্য',
       badge: 'নিরাপদ',
       color: '#1A1F71',
       icon: '💳'
-    },
-    {
-      id: 'cod',
-      name: 'ক্যাশ অন ডেলিভারি',
-      subtitle: 'পণ্য হাতে পেয়ে টাকা দিন',
-      badge: 'সহজ',
-      color: '#374639',
-      icon: '💵'
     }
   ];
 
@@ -102,18 +101,11 @@ export default function CheckoutView() {
     if (!formData.address.trim()) errs.address = 'বিস্তারিত ডেলিভারি ঠিকানা লিখুন';
     if (!formData.deliveryDate) errs.deliveryDate = 'ডেলিভারি তারিখ নির্বাচন করুন';
 
-    if (formData.paymentMethod === 'bkash' && !formData.bkashNumber) {
-      errs.bkashNumber = 'বিকাশ ওয়ালেট নম্বর লিখুন';
-    }
-    if (formData.paymentMethod === 'nagad' && !formData.nagadNumber) {
-      errs.nagadNumber = 'নগদ ওয়ালেট নম্বর লিখুন';
-    }
-
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
       addToast('অনুগ্রহ করে প্রয়োজনীয় তথ্য সঠিকভাবে পূরণ করুন', 'error');
@@ -122,41 +114,82 @@ export default function CheckoutView() {
 
     setIsSubmitting(true);
 
-    const orderId = `PK-${Math.floor(100000 + Math.random() * 900000)}`;
-    const newOrder = {
-      orderId,
-      items: [...items],
-      subtotal,
-      deliveryFee,
-      discountAmount,
-      grandTotal,
-      coupon: appliedCoupon ? appliedCoupon.code : null,
-      deliveryInfo: { ...formData },
-      createdAt: new Date().toISOString(),
-      status: 'confirmed'
-    };
+    try {
+      const orderPayload = {
+        items: items.map((it) => ({
+          productId: it.productId || it.id,
+          name: it.name,
+          englishName: it.englishName || '',
+          price: it.price,
+          quantity: it.quantity,
+          images: it.images || (it.image ? [it.image] : [])
+        })),
+        delivery: {
+          name: formData.fullName.trim(),
+          phone: formData.phone.trim(),
+          altPhone: formData.altPhone.trim(),
+          address: formData.address.trim(),
+          area: formData.area,
+          city: formData.city,
+          date: formData.deliveryDate,
+          timeSlot: formData.deliverySlot,
+          giftMessage: formData.giftMessage.trim(),
+          instructions: formData.instructions.trim()
+        },
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
+        paymentMethod: formData.paymentMethod
+      };
 
-    setTimeout(() => {
-      // Save order
-      setLastCompletedOrder(newOrder);
-      try {
-        localStorage.setItem('phul_kini_last_order', JSON.stringify(newOrder));
-      } catch (e) {}
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload)
+      });
 
-      // Confetti effect
-      try {
-        confetti({
-          particleCount: 100,
-          spread: 80,
-          origin: { y: 0.6 }
-        });
-      } catch (e) {}
+      const data = await res.json();
 
-      clearCart();
+      if (data.success && data.order) {
+        // Trigger celebratory confetti
+        try {
+          confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+        } catch (e) {}
+
+        const completedOrderData = {
+          orderId: data.order.orderNumber,
+          items: [...items],
+          subtotal,
+          deliveryFee,
+          discountAmount,
+          grandTotal: data.order.total,
+          coupon: appliedCoupon ? appliedCoupon.code : null,
+          deliveryInfo: { ...formData },
+          createdAt: new Date().toISOString(),
+          status: 'confirmed'
+        };
+
+        setLastCompletedOrder(completedOrderData);
+        try {
+          localStorage.setItem('phul_kini_last_order', JSON.stringify(completedOrderData));
+        } catch (e) {}
+
+        clearCart();
+        addToast('আপনার অর্ডার সফলভাবে নিশ্চিত করা হয়েছে! 🌸', 'success');
+
+        // Check if online payment redirect is needed
+        if (data.paymentRedirectUrl && formData.paymentMethod !== 'cod') {
+          window.location.href = data.paymentRedirectUrl;
+        } else {
+          router.push(`/order-confirmation?orderId=${data.order.orderNumber}`);
+        }
+      } else {
+        addToast(data.message || 'অর্ডার প্রসেস করতে সমস্যা হয়েছে', 'error');
+      }
+    } catch (err) {
+      console.error('Order error:', err);
+      addToast('সার্ভারের সাথে যোগাযোগ স্থাপন করা সম্ভব হয়নি', 'error');
+    } finally {
       setIsSubmitting(false);
-      addToast('আপনার অর্ডার সফলভাবে গৃহীত হয়েছে! 🌸', 'success');
-      router.push(`/order-confirmation?orderId=${orderId}`);
-    }, 1200);
+    }
   };
 
   if (items.length === 0) {
@@ -181,13 +214,13 @@ export default function CheckoutView() {
         <div className="mb-8 border-b border-border-subtle pb-4 flex items-center justify-between">
           <div>
             <span className="text-xs text-primary font-semibold uppercase tracking-wider">
-              নিরাপদ পেমেন্ট
+              নিরাপদ চেকআউট
             </span>
             <h1 className="text-2xl sm:text-4xl font-bold text-main-text mt-0.5">
-              চেকআউট
+              চেকআউট ও পেমেন্ট
             </h1>
             <p className="text-xs sm:text-sm text-main-muted mt-1">
-              নিরাপদ এবং দ্রুত পেমেন্ট সম্পন্ন করুন
+              নিরাপদ 256-bit এনক্রিপশনে অর্ডার সম্পন্ন করুন
             </p>
           </div>
 
@@ -218,7 +251,6 @@ export default function CheckoutView() {
               </div>
 
               <div className="space-y-4 text-xs sm:text-sm">
-                
                 {/* Full Name */}
                 <div>
                   <label className="block font-semibold text-main-text mb-1">
@@ -291,7 +323,7 @@ export default function CheckoutView() {
                   )}
                 </div>
 
-                {/* Area & City */}
+                {/* Area & Delivery Date */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-semibold text-main-text mb-1">
@@ -359,7 +391,7 @@ export default function CheckoutView() {
                   </div>
                 </div>
 
-                {/* Optional Message on Card */}
+                {/* Optional Greeting Message */}
                 <div>
                   <label className="block font-semibold text-main-text mb-1">
                     গ্রিটিং কার্ড বার্তা (ফ্রি হস্তলিপিকৃত কার্ড)
@@ -420,42 +452,6 @@ export default function CheckoutView() {
                   );
                 })}
               </div>
-
-              {/* Simulated Mobile Banking Inputs */}
-              {formData.paymentMethod === 'bkash' && (
-                <div className="p-4 rounded-2xl bg-[#E2136E]/10 border border-[#E2136E]/30 space-y-2 text-xs animate-fade-in">
-                  <span className="font-bold text-[#E2136E]">বিকাশ পেমেন্ট গেটওয়ে:</span>
-                  <p className="text-main-muted">
-                    আপনার বিকাশ অ্যাকাউন্ট নম্বর লিখুন। অর্ডার কনফার্ম করার পর বিকাশ সুরক্ষিত গেটওয়েতে রিডাইরেক্ট হবে।
-                  </p>
-                  <input
-                    type="tel"
-                    placeholder="01XXXXXXXXX"
-                    value={formData.bkashNumber}
-                    onChange={(e) => setFormData({ ...formData, bkashNumber: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-border-muted rounded-xl font-sans"
-                  />
-                  {errors.bkashNumber && (
-                    <p className="text-[11px] text-red-600">{errors.bkashNumber}</p>
-                  )}
-                </div>
-              )}
-
-              {formData.paymentMethod === 'nagad' && (
-                <div className="p-4 rounded-2xl bg-[#F7941D]/10 border border-[#F7941D]/30 space-y-2 text-xs animate-fade-in">
-                  <span className="font-bold text-[#F7941D]">নগদ পেমেন্ট গেটওয়ে:</span>
-                  <input
-                    type="tel"
-                    placeholder="01XXXXXXXXX"
-                    value={formData.nagadNumber}
-                    onChange={(e) => setFormData({ ...formData, nagadNumber: e.target.value })}
-                    className="w-full p-2.5 bg-white border border-border-muted rounded-xl font-sans"
-                  />
-                  {errors.nagadNumber && (
-                    <p className="text-[11px] text-red-600">{errors.nagadNumber}</p>
-                  )}
-                </div>
-              )}
             </div>
           </div>
 
@@ -514,7 +510,7 @@ export default function CheckoutView() {
                 )}
 
                 <div className="pt-3 border-t border-border-muted flex justify-between items-baseline">
-                  <span className="text-base font-bold text-main-text">সর্বমোট</span>
+                  <span className="text-base font-bold text-main-text">সর্বমোট বিল</span>
                   <span className="text-2xl font-bold text-primary">{formatBengaliPrice(grandTotal)}</span>
                 </div>
               </div>
@@ -523,10 +519,13 @@ export default function CheckoutView() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full btn-primary-burgundy py-3.5 text-base font-bold shadow-soft flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full btn-primary-burgundy py-3.5 text-base font-bold shadow-soft flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? (
-                  <span>অর্ডার প্রসেস হচ্ছে...</span>
+                  <span className="flex items-center gap-2">
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>অর্ডার নিশ্চিত করা হচ্ছে...</span>
+                  </span>
                 ) : (
                   <>
                     <span>অর্ডার কনফার্ম করুন</span>
