@@ -17,7 +17,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1C1010] text-[#E8DDD9] font-bengali pt-16 pb-12 mt-auto border-t border-primary-dark">
+    <footer className="bg-[#1C1010] text-[#E8DDD9] font-bengali pt-16 pb-12 mt-auto border-t border-primary-dark notranslate" translate="no">
       <div className="max-w-container mx-auto px-4 md:px-8">
         
         {/* Top Feature Highlights */}
@@ -67,17 +67,17 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 py-12">
           
           {/* Col 1: Brand Info (4 cols) */}
-          <div className="lg:col-span-4 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
+          <div className="lg:col-span-4 space-y-4 notranslate" translate="no">
+            <Link href="/" className="flex items-center gap-2.5 notranslate" translate="no">
               <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white">
                 <Flower2 size={20} />
               </div>
-              <span className="font-bold text-2xl text-white tracking-tight">ফুল কিনি</span>
+              <span className="font-bold text-2xl text-white tracking-tight notranslate" translate="no">ফুল কিনি (Phul Kini)</span>
             </Link>
             <p className="text-sm text-[#C4B3AF] leading-relaxed">
-              ফুল কিনি বাংলাদেশের একটি প্রিমিয়াম ফ্লোরাল বুটিক। ভালোবাসা, অনুভূতি আর জীবনের বিশেষ মুহূর্তগুলোকে তাজা ও নান্দনিক ফুলের সাজে রাঙিয়ে তোলাই আমাদের লক্ষ্য।
+              ফুল কিনি (Phul Kini) বাংলাদেশের একটি প্রিমিয়াম ফ্লোরাল বুটিক। ভালোবাসা, অনুভূতি আর জীবনের বিশেষ মুহূর্তগুলোকে তাজা ও নান্দনিক ফুলের সাজে রাঙিয়ে তোলাই আমাদের লক্ষ্য।
             </p>
-            <div className="pt-2 text-xs text-[#A89692] italic">
+            <div className="pt-2 text-xs text-[#A89692] italic notranslate" translate="no">
               “ভালোবাসা হোক ফুলের ভাষায়”
             </div>
             
@@ -183,8 +183,8 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#3B2828] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#9E8C88]">
-          <p className="flex items-center gap-1.5">
-            © ২০২৬ <strong className="text-white font-medium">ফুল কিনি</strong>. সর্বস্বত্ব সংরক্ষিত। 
+          <p className="flex items-center gap-1.5 notranslate" translate="no">
+            © ২০২৬ <strong className="text-white font-medium notranslate" translate="no">ফুল কিনি (Phul Kini)</strong>. সর্বস্বত্ব সংরক্ষিত। 
             <span className="hidden sm:inline">ভালোবাসা হোক ফুলের ভাষায়</span>
           </p>
 

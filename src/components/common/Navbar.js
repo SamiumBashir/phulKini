@@ -78,7 +78,7 @@ export default function Navbar() {
       >
         <div className="max-w-[1360px] mx-auto px-4 md:px-8 flex items-center justify-between gap-4">
           
-          {/* Left: Brand Logo & Title */}
+          {/* Left: Brand Logo & Title (Protected against unwanted browser auto-translation) */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
@@ -88,15 +88,15 @@ export default function Navbar() {
               <Menu size={22} />
             </button>
 
-            <Link href="/" className="flex items-center gap-2.5 group">
+            <Link href="/" className="flex items-center gap-2.5 group notranslate" translate="no">
               <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#610000] flex items-center justify-center text-white shadow-soft transition-transform group-hover:scale-105 duration-200 shrink-0">
                 <Flower2 size={22} className="text-[#FFDAD4]" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-bengali font-bold text-2xl md:text-[26px] text-[#610000] tracking-tight leading-none">
+              <div className="flex flex-col notranslate" translate="no">
+                <span className="notranslate font-bengali font-bold text-2xl md:text-[26px] text-[#610000] tracking-tight leading-none" translate="no">
                   ফুল কিনি
                 </span>
-                <span className="text-[11px] text-[#7A6B68] font-bengali tracking-normal mt-0.5 opacity-90 hidden sm:block">
+                <span className="notranslate text-[11px] text-[#7A6B68] font-bengali tracking-normal mt-0.5 opacity-90 hidden sm:block" translate="no">
                   ভালোবাসা হোক ফুলের ভাষায়
                 </span>
               </div>
@@ -278,12 +278,12 @@ export default function Navbar() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden flex font-bengali">
           <div className="w-[82%] max-w-sm bg-[#FCF9F8] h-full p-6 shadow-soft-xl flex flex-col justify-between overflow-y-auto animate-slide-up">
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-[#E3BEB8]/50">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between pb-4 border-b border-[#E3BEB8]/50 notranslate" translate="no">
+                <div className="flex items-center gap-2 notranslate" translate="no">
                   <div className="w-8 h-8 rounded-full bg-[#610000] flex items-center justify-center text-white">
                     <Flower2 size={18} className="text-[#FFDAD4]" />
                   </div>
-                  <span className="font-bold text-xl text-[#610000]">ফুল কিনি</span>
+                  <span className="font-bold text-xl text-[#610000] notranslate" translate="no">ফুল কিনি</span>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
@@ -293,7 +293,7 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <p className="text-xs text-[#7A6B68] my-3 italic">
+              <p className="text-xs text-[#7A6B68] my-3 italic notranslate" translate="no">
                 “ভালোবাসা হোক ফুলের ভাষায়”
               </p>
 
