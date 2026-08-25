@@ -112,6 +112,15 @@ export default function CustomBouquetBuilder() {
       images: [
         'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?q=80&w=1000&auto=format&fit=crop'
       ],
+      customBouquetConfig: {
+        flowers: selectedFlowers,
+        sizeId: selectedSize,
+        wrappingId: selectedWrapping,
+        addOnIds: selectedAddOns,
+        cardDesign,
+        recipientName,
+        customMessage
+      },
       customDetails: {
         isCustom: true,
         label: `${toBengaliNumber(totalStemsSelected)}টি স্টেমের সিগনেচার তোড়া`,

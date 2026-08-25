@@ -14,11 +14,11 @@ export async function seedDatabase() {
 
   // 1. Seed Super Admin
   const adminEmail = (process.env.INITIAL_ADMIN_EMAIL || 'admin@phulkini.com').toLowerCase();
-  const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'admin123';
+  const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'PhulKini@Admin2026Secure!';
   const existingAdmin = await User.findOne({ email: adminEmail });
 
   if (!existingAdmin) {
-    const passwordHash = await bcrypt.hash(adminPassword, 10);
+    const passwordHash = await bcrypt.hash(adminPassword, 12);
     await User.create({
       name: process.env.INITIAL_ADMIN_NAME || 'ফুল কিনি সুপার অ্যাডমিন',
       email: adminEmail,
@@ -35,7 +35,7 @@ export async function seedDatabase() {
   // 2. Seed Categories
   const existingCategoriesCount = await Category.countDocuments();
   if (existingCategoriesCount === 0) {
-    const categoryDocs = CATEGORIES.filter(c => c.slug !== 'all').map((c, idx) => ({
+    const categoryDocs = CATEGORIES.filter((c) => c.slug !== 'all').map((c, idx) => ({
       name: c.name,
       englishName: c.englishName || '',
       slug: c.slug,
@@ -52,9 +52,10 @@ export async function seedDatabase() {
   const existingProductsCount = await Product.countDocuments();
   if (existingProductsCount === 0) {
     const productDocs = PRODUCTS.map((p) => {
-      const images = p.images && p.images.length > 0 
-        ? p.images 
-        : [p.image || 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?q=80&w=1000&auto=format&fit=crop'];
+      const images =
+        p.images && p.images.length > 0
+          ? p.images
+          : [p.image || 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?q=80&w=1000&auto=format&fit=crop'];
 
       return {
         name: p.name,
@@ -81,7 +82,7 @@ export async function seedDatabase() {
         wrapping: p.wrapping || 'সিগনেচার বার্গান্ডি ম্যাট র‍্যাপিং',
         occasions: p.occasions || ['love', 'birthday'],
         rating: p.rating || 5.0,
-        reviewsCount: p.reviewsCount || 12,
+        reviewsCount: p.reviewsCount || 0,
         tags: [p.category, ...(p.occasions || [])]
       };
     });

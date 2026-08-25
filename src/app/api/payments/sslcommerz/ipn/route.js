@@ -8,12 +8,13 @@ export async function POST(request) {
     const tranId = formData.get('tran_id');
 
     if (valId && tranId) {
-      await validateSSLCommerzTransaction({ valId, tranId });
+      const result = await validateSSLCommerzTransaction({ valId, tranId });
+      return NextResponse.json({ success: result.valid, message: 'IPN processed' });
     }
 
-    return NextResponse.json({ success: true, message: 'IPN received' });
+    return NextResponse.json({ success: false, message: 'Missing transaction parameters' }, { status: 400 });
   } catch (error) {
     console.error('SSLCOMMERZ IPN error:', error);
-    return NextResponse.json({ success: false }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'IPN internal processing error' }, { status: 500 });
   }
 }

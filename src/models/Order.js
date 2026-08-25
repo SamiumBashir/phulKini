@@ -5,7 +5,8 @@ const OrderItemSchema = new mongoose.Schema(
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
-      required: false // Optional for custom bouquets
+      required: false,
+      default: null
     },
     nameSnapshot: {
       type: String,
@@ -33,6 +34,10 @@ const OrderItemSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0
+    },
+    customBouquetDetails: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
     }
   },
   { _id: false }
@@ -50,7 +55,8 @@ const OrderSchema = new mongoose.Schema(
       userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        default: null
+        default: null,
+        index: true
       },
       name: { type: String, required: true },
       phone: { type: String, required: true, index: true },
@@ -65,6 +71,7 @@ const OrderSchema = new mongoose.Schema(
       address: { type: String, required: true },
       area: { type: String, default: 'বনানী' },
       city: { type: String, default: 'ঢাকা' },
+      zone: { type: String, default: 'dhaka_inside' },
       date: { type: String, required: true },
       timeSlot: { type: String, default: 'morning' },
       giftMessage: { type: String, default: '' },
@@ -89,17 +96,19 @@ const OrderSchema = new mongoose.Schema(
       status: {
         type: String,
         enum: ['UNPAID', 'PENDING', 'PAID', 'FAILED', 'REFUNDED'],
-        default: 'UNPAID'
+        default: 'UNPAID',
+        index: true
       },
       transactionId: { type: String, default: null },
       valId: { type: String, default: null },
       bankTranId: { type: String, default: null },
+      cardType: { type: String, default: null },
       paidAt: { type: Date, default: null }
     },
     status: {
       type: String,
       enum: [
-        'PENDING',
+        'PENDING_PAYMENT',
         'CONFIRMED',
         'PROCESSING',
         'READY_FOR_DELIVERY',
@@ -109,6 +118,19 @@ const OrderSchema = new mongoose.Schema(
         'REFUNDED'
       ],
       default: 'CONFIRMED',
+      index: true
+    },
+    inventoryReserved: {
+      type: Boolean,
+      default: true
+    },
+    inventoryReleased: {
+      type: Boolean,
+      default: false
+    },
+    idempotencyKey: {
+      type: String,
+      default: null,
       index: true
     },
     statusHistory: [
@@ -124,5 +146,8 @@ const OrderSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+OrderSchema.index({ status: 1, createdAt: -1 });
+OrderSchema.index({ 'customer.phone': 1, orderNumber: 1 });
 
 export default mongoose.models.Order || mongoose.model('Order', OrderSchema);

@@ -1,5 +1,5 @@
-import connectToDatabase from '@/lib/db/mongodb';
-import Order from '@/models/Order';
+import connectToDatabase from '../../lib/db/mongodb.js';
+import Order from '../../models/Order.js';
 import mongoose from 'mongoose';
 
 export async function getOrderById(orderNumberOrId, session = null) {

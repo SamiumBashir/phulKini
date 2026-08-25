@@ -1,17 +1,24 @@
 import Redis from 'ioredis';
+import { ENV } from '../config/env.js';
 
 let redis = null;
 const memoryStore = new Map();
 
-if (process.env.REDIS_URL) {
+if (ENV.REDIS.URL) {
   try {
-    redis = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: 1,
+    redis = new Redis(ENV.REDIS.URL, {
+      maxRetriesPerRequest: 2,
       enableOfflineQueue: false,
-      connectTimeout: 2000,
+      connectTimeout: 3000,
+      lazyConnect: true
     });
+
+    redis.connect().catch((err) => {
+      console.warn('⚠️ [REDIS] Initial connection warning, using memory fallback:', err.message);
+    });
+
     redis.on('error', (err) => {
-      console.warn('⚠️ Redis error, utilizing in-memory cache fallback:', err.message);
+      console.warn('⚠️ [REDIS] Client error:', err.message);
     });
   } catch (e) {
     redis = null;
@@ -19,6 +26,9 @@ if (process.env.REDIS_URL) {
 }
 
 export const cache = {
+  /**
+   * Get cached value
+   */
   async get(key) {
     if (redis && redis.status === 'ready') {
       try {
@@ -35,6 +45,9 @@ export const cache = {
     return item.value;
   },
 
+  /**
+   * Set cached value with TTL
+   */
   async set(key, value, ttlSeconds = 300) {
     if (redis && redis.status === 'ready') {
       try {
@@ -49,6 +62,9 @@ export const cache = {
     return true;
   },
 
+  /**
+   * Delete cached key
+   */
   async del(key) {
     if (redis && redis.status === 'ready') {
       try {
@@ -57,6 +73,38 @@ export const cache = {
     }
     memoryStore.delete(key);
     return true;
+  },
+
+  /**
+   * Atomic increment with expiration for rate limiting
+   */
+  async incrWithExpire(key, ttlSeconds = 60) {
+    if (redis && redis.status === 'ready') {
+      try {
+        const pipeline = redis.pipeline();
+        pipeline.incr(key);
+        pipeline.expire(key, ttlSeconds);
+        const results = await pipeline.exec();
+        const currentCount = results[0][1];
+        return { count: currentCount, ttl: ttlSeconds };
+      } catch (e) {}
+    }
+
+    // In-memory fallback
+    const now = Date.now();
+    const existing = memoryStore.get(key);
+
+    if (!existing || now > existing.expires) {
+      memoryStore.set(key, {
+        value: 1,
+        expires: now + ttlSeconds * 1000
+      });
+      return { count: 1, ttl: ttlSeconds };
+    }
+
+    existing.value += 1;
+    const remainingTtl = Math.max(1, Math.ceil((existing.expires - now) / 1000));
+    return { count: existing.value, ttl: remainingTtl };
   }
 };
 

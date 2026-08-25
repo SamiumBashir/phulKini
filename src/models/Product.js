@@ -76,7 +76,8 @@ const ProductSchema = new mongoose.Schema(
     },
     inStock: {
       type: Boolean,
-      default: true
+      default: true,
+      index: true
     },
     isFeatured: {
       type: Boolean,
@@ -128,7 +129,7 @@ const ProductSchema = new mongoose.Schema(
     },
     reviewsCount: {
       type: Number,
-      default: 12
+      default: 0
     },
     tags: {
       type: [String],
@@ -141,7 +142,13 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-// Calculate discount automatically
+// Compound indexes for optimal search and filtering
+ProductSchema.index({ category: 1, isAvailable: 1, stock: 1, price: 1 });
+ProductSchema.index({ occasions: 1, isAvailable: 1 });
+ProductSchema.index({ isFeatured: 1, isAvailable: 1 });
+ProductSchema.index({ isBestseller: 1, isAvailable: 1 });
+
+// Automatically compute inStock and discount percent
 ProductSchema.pre('save', function (next) {
   const original = this.originalPrice || this.compareAtPrice;
   if (original && original > this.price) {
@@ -149,7 +156,7 @@ ProductSchema.pre('save', function (next) {
   } else {
     this.discountPercent = 0;
   }
-  this.inStock = this.stock > 0 && this.isAvailable;
+  this.inStock = Boolean(this.stock > 0 && this.isAvailable);
   next();
 });
 

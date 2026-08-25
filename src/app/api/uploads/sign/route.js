@@ -1,48 +1,46 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
-import { getServerSession, hasPermission } from '@/lib/security/auth';
+import { requireRole } from '@/lib/security/auth';
+import { ENV } from '@/lib/config/env';
+import { withApiHandler, OperationalError } from '@/lib/errors/apiHandler';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'phulkini',
-  api_key: process.env.CLOUDINARY_API_KEY || '123456789012345',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'placeholder_secret'
-});
+const CLOUD_NAME = ENV.CLOUDINARY.CLOUD_NAME;
+const API_KEY = ENV.CLOUDINARY.API_KEY;
+const API_SECRET = ENV.CLOUDINARY.API_SECRET;
 
-export async function POST(request) {
-  try {
-    const session = await getServerSession(request);
-
-    if (!hasPermission(session, ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'EDITOR'])) {
-      return NextResponse.json(
-        { success: false, message: 'অননুমোদিত অ্যাক্সেস! মিডিয়া আপলোডের অনুমতি নেই।' },
-        { status: 403 }
-      );
-    }
-
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    const folder = 'phulkini_products';
-
-    const signature = cloudinary.utils.api_sign_request(
-      {
-        timestamp,
-        folder
-      },
-      process.env.CLOUDINARY_API_SECRET || 'placeholder_secret'
-    );
-
-    return NextResponse.json({
-      success: true,
-      signature,
-      timestamp,
-      cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'phulkini',
-      apiKey: process.env.CLOUDINARY_API_KEY || '123456789012345',
-      folder
-    });
-  } catch (error) {
-    console.error('Cloudinary signing error:', error);
-    return NextResponse.json(
-      { success: false, message: 'আপলোড সিগনেচার তৈরিতে সমস্যা হয়েছে' },
-      { status: 500 }
-    );
-  }
+if (CLOUD_NAME && API_KEY && API_SECRET) {
+  cloudinary.config({
+    cloud_name: CLOUD_NAME,
+    api_key: API_KEY,
+    api_secret: API_SECRET
+  });
 }
+
+export const POST = withApiHandler(async (request) => {
+  // 1. Enforce admin role authentication
+  await requireRole(request, ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'EDITOR']);
+
+  if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
+    throw new OperationalError('ক্লাউডিনারি মিডিয়া স্টোরেজ ক্রেডেনশিয়াল সার্ভারে কনফিগার করা নেই।', 500);
+  }
+
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const folder = ENV.CLOUDINARY.UPLOAD_FOLDER || 'phulkini_products';
+
+  // Strict signature generation with constrained parameters
+  const paramsToSign = {
+    folder,
+    timestamp
+  };
+
+  const signature = cloudinary.utils.api_sign_request(paramsToSign, API_SECRET);
+
+  return NextResponse.json({
+    success: true,
+    signature,
+    timestamp,
+    cloudName: CLOUD_NAME,
+    apiKey: API_KEY,
+    folder
+  });
+}, 'UPLOADS_SIGN');

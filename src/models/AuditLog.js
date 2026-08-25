@@ -5,7 +5,8 @@ const AuditLogSchema = new mongoose.Schema(
     actorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      default: null
+      default: null,
+      index: true
     },
     actorName: {
       type: String,
@@ -40,11 +41,18 @@ const AuditLogSchema = new mongoose.Schema(
     userAgent: {
       type: String,
       default: ''
+    },
+    requestId: {
+      type: String,
+      default: ''
     }
   },
   {
     timestamps: { createdAt: true, updatedAt: false }
   }
 );
+
+AuditLogSchema.index({ createdAt: -1 });
+AuditLogSchema.index({ resource: 1, resourceId: 1 });
 
 export default mongoose.models.AuditLog || mongoose.model('AuditLog', AuditLogSchema);

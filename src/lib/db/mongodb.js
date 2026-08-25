@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
+import { ENV } from '../config/env.js';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/phul_kini';
+const MONGODB_URI = ENV.DATABASE.MONGODB_URI;
 
 /**
- * Global is used here to maintain a cached connection across hot reloads in development
- * and serverless function executions in production.
+ * Global cache across hot reloads in development and serverless invocations
  */
 let cached = global.mongoose;
 
@@ -23,16 +23,19 @@ export async function connectToDatabase() {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      autoIndex: process.env.NODE_ENV !== 'production'
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-      console.log('🌸 MongoDB Connected: phul_kini database');
-      return mongooseInstance;
-    }).catch((err) => {
-      cached.promise = null;
-      console.warn('⚠️ MongoDB connection warning (Falling back to resilient state):', err.message);
-      throw err;
-    });
+    cached.promise = mongoose
+      .connect(MONGODB_URI, opts)
+      .then((mongooseInstance) => {
+        return mongooseInstance;
+      })
+      .catch((err) => {
+        cached.promise = null;
+        console.error('❌ MongoDB Connection Error:', err.message);
+        throw err;
+      });
   }
 
   try {

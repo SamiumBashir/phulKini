@@ -1,6 +1,6 @@
-import connectToDatabase from '@/lib/db/mongodb';
-import Product from '@/models/Product';
-import { logAudit } from '@/server/audit/logAudit';
+import connectToDatabase from '../../lib/db/mongodb.js';
+import Product from '../../models/Product.js';
+import { logAudit } from '../audit/logAudit.js';
 
 export async function createProduct(productData, actor = null) {
   await connectToDatabase();
@@ -33,7 +33,7 @@ export async function createProduct(productData, actor = null) {
       action: 'CREATE_PRODUCT',
       resource: 'PRODUCT',
       resourceId: product._id.toString(),
-      metadata: { name: product.name, price: product.price }
+      metadata: { name: product.name, price: product.price, stock: product.stock }
     });
   }
 

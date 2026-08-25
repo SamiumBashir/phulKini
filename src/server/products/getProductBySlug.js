@@ -1,6 +1,6 @@
-import connectToDatabase from '@/lib/db/mongodb';
-import Product from '@/models/Product';
-import { PRODUCTS as FALLBACK_PRODUCTS } from '@/data/products';
+import connectToDatabase from '../../lib/db/mongodb.js';
+import Product from '../../models/Product.js';
+import { PRODUCTS as FALLBACK_PRODUCTS } from '../../data/products.js';
 import mongoose from 'mongoose';
 
 export async function getProductBySlug(slugOrId) {

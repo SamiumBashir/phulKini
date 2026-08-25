@@ -1,5 +1,27 @@
-import connectToDatabase from '@/lib/db/mongodb';
-import AuditLog from '@/models/AuditLog';
+import connectToDatabase from '../../lib/db/mongodb.js';
+import AuditLog from '../../models/AuditLog.js';
+
+const SENSITIVE_KEYS = ['password', 'passwordHash', 'token', 'secret', 'apiSecret', 'store_passwd', 'cvv', 'authSecret'];
+
+/**
+ * Recursively sanitize metadata object removing any sensitive fields
+ */
+function sanitizeMetadata(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeMetadata);
+
+  const clean = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (SENSITIVE_KEYS.some((k) => key.toLowerCase().includes(k.toLowerCase()))) {
+      clean[key] = '[REDACTED]';
+    } else if (typeof value === 'object' && value !== null) {
+      clean[key] = sanitizeMetadata(value);
+    } else {
+      clean[key] = value;
+    }
+  }
+  return clean;
+}
 
 export async function logAudit({
   actorId = null,
@@ -10,7 +32,8 @@ export async function logAudit({
   resourceId = null,
   metadata = {},
   ip = '',
-  userAgent = ''
+  userAgent = '',
+  requestId = ''
 }) {
   try {
     await connectToDatabase();
@@ -21,9 +44,10 @@ export async function logAudit({
       action,
       resource,
       resourceId,
-      metadata,
+      metadata: sanitizeMetadata(metadata),
       ip,
-      userAgent
+      userAgent,
+      requestId
     });
   } catch (error) {
     console.error('Audit log failed to record:', error.message);

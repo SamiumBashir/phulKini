@@ -1,7 +1,7 @@
-import connectToDatabase from '@/lib/db/mongodb';
-import Product from '@/models/Product';
-import { PRODUCTS as FALLBACK_PRODUCTS } from '@/data/products';
-import cache from '@/lib/redis/redis';
+import connectToDatabase from '../../lib/db/mongodb.js';
+import Product from '../../models/Product.js';
+import { PRODUCTS as FALLBACK_PRODUCTS } from '../../data/products.js';
+import cache from '../../lib/redis/redis.js';
 
 export async function getProducts({
   category = null,
@@ -65,7 +65,7 @@ export async function getProducts({
       Product.countDocuments(query)
     ]);
 
-    // If MongoDB has no products yet (e.g. before initial seed), provide the fallback catalog
+    // Initial fallback if database is not yet seeded
     if (products.length === 0 && !search && !category && !occasion) {
       return {
         products: FALLBACK_PRODUCTS,
@@ -86,7 +86,7 @@ export async function getProducts({
     await cache.set(cacheKey, result, 120); // 2 minutes cache
     return result;
   } catch (error) {
-    console.warn('⚠️ Database fetch failed, returning resilient boutique catalog:', error.message);
+    console.warn('⚠️ Database fetch fallback:', error.message);
     return {
       products: FALLBACK_PRODUCTS,
       total: FALLBACK_PRODUCTS.length,
