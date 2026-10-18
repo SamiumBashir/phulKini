@@ -80,14 +80,6 @@ export default function Navbar() {
           
           {/* Left: Brand Logo & Title (Protected against unwanted browser auto-translation) */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="p-1.5 text-[#1B1C1C] hover:text-[#610000] transition-colors lg:hidden rounded-lg hover:bg-[#F2E8E5]"
-              aria-label="Open menu"
-            >
-              <Menu size={22} />
-            </button>
-
             <Link href="/" className="flex items-center gap-2.5 group notranslate" translate="no">
               <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#610000] flex items-center justify-center text-white shadow-soft transition-transform group-hover:scale-105 duration-200 shrink-0">
                 <Flower2 size={22} className="text-[#FFDAD4]" />
@@ -126,7 +118,7 @@ export default function Navbar() {
           </nav>
 
           {/* Right: Search Pill & Action Icons */}
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
             {/* Search Pill Button */}
             <button
               onClick={() => setSearchOpen(true)}
@@ -166,6 +158,15 @@ export default function Navbar() {
                   {toBengaliNumber(totalItemsCount)}
                 </span>
               )}
+            </button>
+
+            {/* Mobile Hamburger Menu Toggle (Right Side) */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-1.5 text-[#1B1C1C] hover:text-[#610000] transition-colors lg:hidden rounded-lg hover:bg-[#F2E8E5]"
+              aria-label="Open menu"
+            >
+              <Menu size={22} />
             </button>
           </div>
         </div>
@@ -273,66 +274,73 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu (Right Side) */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden flex font-bengali">
-          <div className="w-[82%] max-w-sm bg-[#FCF9F8] h-full p-6 shadow-soft-xl flex flex-col justify-between overflow-y-auto animate-slide-up">
-            <div>
-              <div className="flex items-center justify-between pb-4 border-b border-[#E3BEB8]/50 notranslate" translate="no">
-                <div className="flex items-center gap-2 notranslate" translate="no">
-                  <div className="w-8 h-8 rounded-full bg-[#610000] flex items-center justify-center text-white">
-                    <Flower2 size={18} className="text-[#FFDAD4]" />
+        <div className="fixed inset-0 z-50 overflow-hidden lg:hidden font-bengali">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 animate-fade-in"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Right Drawer */}
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 z-10">
+            <div className="w-[82vw] max-w-sm bg-[#FCF9F8] border-l border-[#E3BEB8]/50 h-full p-6 shadow-soft-xl flex flex-col justify-between overflow-y-auto animate-slide-up">
+              <div>
+                <div className="flex items-center justify-between pb-4 border-b border-[#E3BEB8]/50 notranslate" translate="no">
+                  <div className="flex items-center gap-2 notranslate" translate="no">
+                    <div className="w-8 h-8 rounded-full bg-[#610000] flex items-center justify-center text-white">
+                      <Flower2 size={18} className="text-[#FFDAD4]" />
+                    </div>
+                    <span className="font-bold text-xl text-[#610000] notranslate" translate="no">ফুল কিনি</span>
                   </div>
-                  <span className="font-bold text-xl text-[#610000] notranslate" translate="no">ফুল কিনি</span>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-1.5 text-main-muted hover:text-[#610000] rounded-lg hover:bg-[#F2E8E5] transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
                 </div>
-                <button
+
+                <p className="text-xs text-[#7A6B68] my-3 italic notranslate" translate="no">
+                  “ভালোবাসা হোক ফুলের ভাষায়”
+                </p>
+
+                <div className="flex flex-col gap-1 mt-4">
+                  {navLinks.map((link) => {
+                    const isActive = pathname === link.href;
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-base transition-colors ${
+                          link.highlight
+                            ? 'bg-[#FFDAD4] text-[#610000] font-semibold'
+                            : isActive
+                            ? 'bg-[#F2E8E5] text-[#610000] font-bold'
+                            : 'text-[#1B1C1C] hover:bg-[#F2E8E5]'
+                        }`}
+                      >
+                        <span>{link.name}</span>
+                        <ChevronRight size={16} className="opacity-60" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-[#E3BEB8]/50">
+                <Link
+                  href="/custom-bouquet"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 text-main-muted hover:text-[#610000] rounded-lg"
+                  className="w-full bg-[#610000] text-white hover:bg-[#4E0000] py-2.5 rounded-full text-xs font-bold justify-center flex transition-colors shadow-soft"
                 >
-                  <X size={20} />
-                </button>
+                  তোড়া কাস্টমাইজ করুন →
+                </Link>
               </div>
-
-              <p className="text-xs text-[#7A6B68] my-3 italic notranslate" translate="no">
-                “ভালোবাসা হোক ফুলের ভাষায়”
-              </p>
-
-              <div className="flex flex-col gap-1 mt-4">
-                {navLinks.map((link) => {
-                  const isActive = pathname === link.href;
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-base transition-colors ${
-                        link.highlight
-                          ? 'bg-[#FFDAD4] text-[#610000] font-semibold'
-                          : isActive
-                          ? 'bg-[#F2E8E5] text-[#610000] font-bold'
-                          : 'text-[#1B1C1C] hover:bg-[#F2E8E5]'
-                      }`}
-                    >
-                      <span>{link.name}</span>
-                      <ChevronRight size={16} className="opacity-60" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-[#E3BEB8]/50">
-              <Link
-                href="/custom-bouquet"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full bg-[#610000] text-white hover:bg-[#4E0000] py-2.5 rounded-full text-xs font-bold justify-center flex transition-colors shadow-soft"
-              >
-                তোড়া কাস্টমাইজ করুন →
-              </Link>
             </div>
           </div>
-          
-          <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
         </div>
       )}
     </>
