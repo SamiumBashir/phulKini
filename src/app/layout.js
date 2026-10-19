@@ -29,13 +29,16 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="bn" className="notranslate" translate="no">
+    <html lang="bn" className="notranslate" translate="no" suppressHydrationWarning>
       <head>
         <meta name="google" content="notranslate" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-screen flex flex-col bg-[#FCF9F8] text-[#1B1C1C] antialiased selection:bg-[#FFDAD4] selection:text-[#610000]">
+      <body
+        suppressHydrationWarning
+        className="min-h-screen flex flex-col bg-[#FCF9F8] text-[#1B1C1C] antialiased selection:bg-[#FFDAD4] selection:text-[#610000]"
+      >
         <ToastProvider>
           <ProductProvider>
             <WishlistProvider>

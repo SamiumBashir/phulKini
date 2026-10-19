@@ -41,14 +41,14 @@ export default function CartDrawer() {
 
   if (!isDrawerOpen) return null;
 
-  const handleApplyCoupon = (e) => {
+  const handleApplyCoupon = async (e) => {
     e.preventDefault();
     setCouponError('');
     if (!couponInput.trim()) return;
 
-    const res = applyCoupon(couponInput);
-    if (!res.success) {
-      setCouponError(res.message);
+    const res = await applyCoupon(couponInput);
+    if (!res?.success) {
+      setCouponError(res?.message || 'অবৈধ কুপন কোড');
     } else {
       setCouponInput('');
     }

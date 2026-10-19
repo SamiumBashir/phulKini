@@ -38,14 +38,14 @@ export default function CartView() {
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState('');
 
-  const handleApplyCoupon = (e) => {
+  const handleApplyCoupon = async (e) => {
     e.preventDefault();
     setCouponError('');
     if (!couponCode.trim()) return;
 
-    const res = applyCoupon(couponCode);
-    if (!res.success) {
-      setCouponError(res.message);
+    const res = await applyCoupon(couponCode);
+    if (!res?.success) {
+      setCouponError(res?.message || 'অবৈধ কুপন কোড');
     } else {
       setCouponCode('');
     }

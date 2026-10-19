@@ -102,7 +102,7 @@ export function CartProvider({ children }) {
   const applyCouponCode = async (code) => {
     if (!code || !code.trim()) {
       addToast('অনুগ্রহ করে কুপন কোড লিখুন', 'error');
-      return false;
+      return { success: false, message: 'অনুগ্রহ করে কুপন কোড লিখুন' };
     }
 
     try {
@@ -124,14 +124,14 @@ export function CartProvider({ children }) {
           type: data.type
         });
         addToast(data.message || 'কুপন সফলভাবে যুক্ত হয়েছে! 🌸', 'success');
-        return true;
+        return { success: true, message: data.message };
       } else {
         addToast(data.message || 'অবৈধ কুপন কোড', 'error');
-        return false;
+        return { success: false, message: data.message || 'অবৈধ কুপন কোড' };
       }
     } catch (e) {
       addToast('কুপন যাচাই করতে সমস্যা হয়েছে', 'error');
-      return false;
+      return { success: false, message: 'কুপন যাচাই করতে সমস্যা হয়েছে' };
     }
   };
 
@@ -164,9 +164,12 @@ export function CartProvider({ children }) {
         setIsDrawerOpen,
         setLastCompletedOrder,
         addItem,
+        addToCart: addItem,
         removeItem,
+        removeFromCart: removeItem,
         updateQuantity,
         clearCart,
+        applyCoupon: applyCouponCode,
         applyCouponCode,
         removeCoupon
       }}
