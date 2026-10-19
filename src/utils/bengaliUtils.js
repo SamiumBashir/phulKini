@@ -33,7 +33,7 @@ export function formatBengaliPrice(amount, showSymbol = true) {
   }
   const formattedEnglish = amount.toLocaleString('en-IN');
   const formattedBengali = formattedEnglish.replace(/\d/g, (d) => bengaliDigits[parseInt(d, 10)]);
-  return showSymbol ? `৳ ${formattedBengali}` : formattedBengali;
+  return showSymbol ? `৳\u00A0${formattedBengali}` : formattedBengali;
 }
 
 /**

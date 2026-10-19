@@ -158,12 +158,12 @@ export default function ProductDetailPageView({ productId }) {
               <p className="text-xs text-main-subtle font-sans mt-0.5">{product.englishName}</p>
 
               {/* Price */}
-              <div className="flex items-baseline gap-3 mt-4">
-                <span className="text-3xl font-bold text-primary">
+              <div className="flex items-baseline gap-3 mt-4 flex-wrap">
+                <span className="text-3xl font-bold text-primary whitespace-nowrap">
                   {formatBengaliPrice(product.price)}
                 </span>
                 {product.originalPrice && (
-                  <span className="text-base text-main-subtle line-through">
+                  <span className="text-base text-main-subtle line-through whitespace-nowrap">
                     {formatBengaliPrice(product.originalPrice)}
                   </span>
                 )}

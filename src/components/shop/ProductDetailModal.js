@@ -186,12 +186,12 @@ export default function ProductDetailModal({ product, onClose }) {
               </p>
 
               {/* Price Row */}
-              <div className="flex items-baseline gap-3 mt-3">
-                <span className="text-2xl sm:text-3xl font-bold text-primary">
+              <div className="flex items-baseline gap-3 mt-3 flex-wrap">
+                <span className="text-2xl sm:text-3xl font-bold text-primary whitespace-nowrap">
                   {formatBengaliPrice(product.price)}
                 </span>
                 {product.originalPrice && (
-                  <span className="text-base text-main-subtle line-through opacity-70">
+                  <span className="text-base text-main-subtle line-through opacity-70 whitespace-nowrap">
                     {formatBengaliPrice(product.originalPrice)}
                   </span>
                 )}

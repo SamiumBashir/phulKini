@@ -6,7 +6,7 @@ export const BUILDER_OPTIONS = {
       name: 'রক্তিম ডাচ গোলাপ',
       englishName: 'Dutch Red Rose',
       pricePerStem: 120,
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400&auto=format&fit=crop',
+      image: '/images/products/red-rose-love.jpg',
       color: '#B22222',
       tag: 'জনপ্রিয়'
     },
@@ -15,7 +15,7 @@ export const BUILDER_OPTIONS = {
       name: 'প্যাস্টেল পিংক রোজ',
       englishName: 'Pastel Pink Rose',
       pricePerStem: 130,
-      image: 'https://images.unsplash.com/photo-1559563458-527698bf5295?q=80&w=400&auto=format&fit=crop',
+      image: '/images/products/pastel-peony-box.jpg',
       color: '#FFB6C1',
       tag: 'রোমান্টিক'
     },
@@ -155,7 +155,7 @@ export const BUILDER_OPTIONS = {
       id: 'burgundy-matte',
       name: 'সিগনেচার বার্গান্ডি ম্যাট',
       price: 150,
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=300&auto=format&fit=crop',
+      image: '/images/products/midnight-romance.jpg',
       tag: 'ফুল কিনি স্পেশাল'
     },
     {

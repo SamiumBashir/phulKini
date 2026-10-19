@@ -97,7 +97,7 @@ export default function HeroSection() {
               {/* Main Bouquet Card */}
               <div className="relative rounded-[28px] overflow-hidden border-2 border-border-muted bg-surface-white shadow-soft-xl group">
                 <img
-                  src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop"
+                  src="/images/products/midnight-romance.jpg"
                   alt="Phul Kini Signature Bouquet"
                   className="w-full aspect-[4/5] object-cover transition-transform duration-700 group-hover:scale-105"
                   priority="true"

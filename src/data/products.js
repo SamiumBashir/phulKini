@@ -16,9 +16,8 @@ export const PRODUCTS = [
     isNew: false,
     inStock: true,
     images: [
-      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1559563458-527698bf5295?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?q=80&w=1000&auto=format&fit=crop'
+      '/images/products/midnight-romance.jpg',
+      '/images/products/red-rose-love.jpg'
     ],
     shortDescription: 'গভীর লাল ডাচ গোলাপের এক রাজকীয় সমাহার, যা ভালোবাসার গভীর অনুভূতি নিখুঁতভাবে প্রকাশ করে।',
     description: 'মিডনাইট রোমান্স হলো আমাদের সিগনেচার কালেকশনের অন্যতম মাস্টারপিস। সরাসরি নেদারল্যান্ডস থেকে আমদানিকৃত ২৪টি দীর্ঘ ডাঁটার গাঢ় লাল তাজা গোলাপ এবং সূক্ষ্ম বেবিস ব্রেথ (জিপসি) দিয়ে তৈরি এই তোড়াটি ম্যাট ব্ল্যাক ও গোল্ডেন রিবন দিয়ে মোড়ানো। বিশেষ মুহূর্ত ও ভালোবাসার বহিঃপ্রকাশে এটি অনন্য।',
@@ -45,9 +44,8 @@ export const PRODUCTS = [
     isNew: true,
     inStock: true,
     images: [
-      'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?q=80&w=1000&auto=format&fit=crop'
+      '/images/products/white-lily-elegance.jpg',
+      'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=1000&auto=format&fit=crop'
     ],
     shortDescription: 'শুভ্র ও সুবাসিত ওরিয়েন্টাল লিলি আর তাজা সবুজ পাতার অপূর্ব নান্দনিক মেলবন্ধন।',
     description: 'শান্তি, পবিত্রতা এবং মার্জিত সৌন্দর্যের প্রতীক শুভ্র লিলি অ্যারেঞ্জমেন্ট। বড় আকারের সুগন্ধি ওরিয়েন্টাল লিলির কুঁড়ি ও ফোটা ফুলের সাথে রয়েছে সাজানো কাঁচের ফুলদানি। যেকোনো ড্রয়িং রুম বা কর্পোরেট উপহার হিসেবে এটি অত্যন্ত চমৎকার।',
@@ -74,9 +72,8 @@ export const PRODUCTS = [
     isNew: false,
     inStock: true,
     images: [
-      'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1520763185298-1b434c919102?q=80&w=1000&auto=format&fit=crop'
+      '/images/products/pastel-peony-box.jpg',
+      'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop'
     ],
     shortDescription: 'নরম প্যাস্টেল রঙের পিওনি ও গার্ডেন রোজ দিয়ে সাজানো ভেলভেট রাউন্ড লাক্সারি বক্স।',
     description: 'লাক্সারি ও আভিজাত্যের প্রতীক আমাদের এই প্যাস্টেল পিওনি বক্স। গোলাপি ও পীচ রঙের পিওনি, স্প্রে রোজ এবং হাইড্রেনজিয়া দিয়ে বিশেষভাবে সজ্জিত। সাথে রয়েছে ফুলের সতেজতা ধরে রাখার হাইড্রো-স্পঞ্জ বেস।',
@@ -103,9 +100,8 @@ export const PRODUCTS = [
     isNew: false,
     inStock: true,
     images: [
-      'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1559563458-527698bf5295?q=80&w=1000&auto=format&fit=crop'
+      '/images/products/red-rose-love.jpg',
+      '/images/products/midnight-romance.jpg'
     ],
     shortDescription: '১৬টি তাজা লাল গোলাপের ক্লাসিক তোড়া, সাথে ক্রাফট পেপার র‍্যাপিং।',
     description: 'প্রেমের চিরন্তন প্রকাশ ঘটায় একগুচ্ছ তাজা লাল গোলাপ। ঝকঝকে তাজা পাপড়ি আর প্রাকৃতিক সতেজতায় ভরপুর এই তোড়াটি যেকোনো প্রণয়মুহূর্তকে স্মরণীয় করে রাখার জন্য একদম উপযুক্ত।',
@@ -132,9 +128,8 @@ export const PRODUCTS = [
     isNew: true,
     inStock: true,
     images: [
-      'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1520763185298-1b434c919102?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=1000&auto=format&fit=crop'
+      '/images/products/sunshine-bouquet.jpg',
+      'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?q=80&w=1000&auto=format&fit=crop'
     ],
     shortDescription: 'উজ্জ্বল হলুদ সূর্যমুখী ও সোনালী ক্রিসেন্থিমামের প্রাণবন্ত কম্বিনেশন।',
     description: 'মুখে মিষ্টি হাসি ফোটাতে এবং ইতিবাচক শক্তি ছড়িয়ে দিতে চমৎকার সানশাইন বুকে। বড় সোনালী সূর্যমুখী ফুল এবং হলুদ বুনো ফুলের এই সমাহার যেকোনো দিনকে উজ্জ্বল করে তুলবে।',
@@ -161,9 +156,8 @@ export const PRODUCTS = [
     isNew: true,
     inStock: true,
     images: [
-      'https://images.unsplash.com/photo-1520763185298-1b434c919102?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=1000&auto=format&fit=crop'
+      '/images/products/royal-tulip-charm.jpg',
+      'https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=1000&auto=format&fit=crop'
     ],
     shortDescription: 'নেদারল্যান্ডস থেকে আমদানিকৃত ১৫টি গোলাপি ও বেগুনি টিউলিপের প্রিমিয়াম সেট।',
     description: 'বসন্তের কোমল ছোঁয়া নিয়ে আসা এই টিউলিপ তোড়াটি অত্যন্ত অভিজাত উপহার। নিখুঁত রঙের বিন্যাস এবং আন্তর্জাতিক মানের প্যাকেজিং একে করেছে অনবদ্য।',
@@ -190,9 +184,8 @@ export const PRODUCTS = [
     isNew: false,
     inStock: true,
     images: [
-      'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop'
+      '/images/products/sweet-blush-combo.jpg',
+      '/images/products/pastel-peony-box.jpg'
     ],
     shortDescription: 'গোলাপি গোলাপ তোড়া, প্রিমিয়াম বেলজিয়ান চকলেট বক্স ও সুগন্ধি সয়া ক্যান্ডেল।',
     description: 'ভালোবাসা প্রকাশের এক সম্পূর্ণ উপহার। ১২টি হালকা গোলাপি গোলাপের মনোমুগ্ধকর তোড়ার সাথে রয়েছে আমদানি করা সুস্বাদু চকলেট এবং ভ্যানিলা সুবাসিত সয়া মোমবাতি।',
@@ -219,9 +212,8 @@ export const PRODUCTS = [
     isNew: true,
     inStock: true,
     images: [
-      'https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop'
+      '/images/products/orchid-serenade-box.jpg',
+      'https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=1000&auto=format&fit=crop'
     ],
     shortDescription: 'থাই পার্পল ও হোয়াইট অর্কিডের অসাধারণ কম্পোজিশন ক্লিয়ার অ্যাক্রিলিক বক্সে।',
     description: 'দীর্ঘস্থায়ী ও রাজকীয় অর্কিড দিয়ে তৈরি এই এক্সক্লুসিভ বক্সটি যারা ব্যতিক্রমী পছন্দ করেন তাদের জন্য সেরা। ঘরে বা অফিসে দীর্ঘ সময় ধরে এর স্নিগ্ধ রূপ বজায় থাকে।',
