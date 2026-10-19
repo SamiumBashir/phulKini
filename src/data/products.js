@@ -17,7 +17,7 @@ export const PRODUCTS = [
     inStock: true,
     images: [
       '/images/products/midnight-romance.jpg',
-      '/images/products/red-rose-love.jpg'
+      'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?q=80&w=1000&auto=format&fit=crop'
     ],
     shortDescription: 'গভীর লাল ডাচ গোলাপের এক রাজকীয় সমাহার, যা ভালোবাসার গভীর অনুভূতি নিখুঁতভাবে প্রকাশ করে।',
     description: 'মিডনাইট রোমান্স হলো আমাদের সিগনেচার কালেকশনের অন্যতম মাস্টারপিস। সরাসরি নেদারল্যান্ডস থেকে আমদানিকৃত ২৪টি দীর্ঘ ডাঁটার গাঢ় লাল তাজা গোলাপ এবং সূক্ষ্ম বেবিস ব্রেথ (জিপসি) দিয়ে তৈরি এই তোড়াটি ম্যাট ব্ল্যাক ও গোল্ডেন রিবন দিয়ে মোড়ানো। বিশেষ মুহূর্ত ও ভালোবাসার বহিঃপ্রকাশে এটি অনন্য।',
@@ -45,7 +45,7 @@ export const PRODUCTS = [
     inStock: true,
     images: [
       '/images/products/white-lily-elegance.jpg',
-      'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=1000&auto=format&fit=crop'
+      'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop'
     ],
     shortDescription: 'শুভ্র ও সুবাসিত ওরিয়েন্টাল লিলি আর তাজা সবুজ পাতার অপূর্ব নান্দনিক মেলবন্ধন।',
     description: 'শান্তি, পবিত্রতা এবং মার্জিত সৌন্দর্যের প্রতীক শুভ্র লিলি অ্যারেঞ্জমেন্ট। বড় আকারের সুগন্ধি ওরিয়েন্টাল লিলির কুঁড়ি ও ফোটা ফুলের সাথে রয়েছে সাজানো কাঁচের ফুলদানি। যেকোনো ড্রয়িং রুম বা কর্পোরেট উপহার হিসেবে এটি অত্যন্ত চমৎকার।',
@@ -185,7 +185,7 @@ export const PRODUCTS = [
     inStock: true,
     images: [
       '/images/products/sweet-blush-combo.jpg',
-      '/images/products/pastel-peony-box.jpg'
+      'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop'
     ],
     shortDescription: 'গোলাপি গোলাপ তোড়া, প্রিমিয়াম বেলজিয়ান চকলেট বক্স ও সুগন্ধি সয়া ক্যান্ডেল।',
     description: 'ভালোবাসা প্রকাশের এক সম্পূর্ণ উপহার। ১২টি হালকা গোলাপি গোলাপের মনোমুগ্ধকর তোড়ার সাথে রয়েছে আমদানি করা সুস্বাদু চকলেট এবং ভ্যানিলা সুবাসিত সয়া মোমবাতি।',

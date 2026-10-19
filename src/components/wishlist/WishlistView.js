@@ -76,7 +76,7 @@ export default function WishlistView() {
         </div>
 
         {/* Wishlist Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {wishlist.map((product) => (
             <ProductCard
               key={product.id}

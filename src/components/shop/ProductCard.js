@@ -30,7 +30,7 @@ export default function ProductCard({ product, onQuickView }) {
   return (
     <div
       onClick={() => onQuickView && onQuickView(product)}
-      className="group card-luxury overflow-hidden flex flex-col justify-between cursor-pointer font-bengali h-full select-none"
+      className="group card-luxury overflow-hidden flex flex-col justify-between cursor-pointer font-bengali h-full"
     >
       {/* Product Image Container */}
       <div
@@ -50,19 +50,19 @@ export default function ProductCard({ product, onQuickView }) {
         />
 
         {/* Badges Overlay */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10 pointer-events-none">
+        <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1 z-10 pointer-events-none items-start">
           {product.discountPercent > 0 && (
-            <span className="bg-primary text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full shadow-soft-sm tracking-tight font-sans w-fit">
+            <span className="bg-primary text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full shadow-soft-sm tracking-tight font-sans whitespace-nowrap">
               -{toBengaliNumber(product.discountPercent)}%
             </span>
           )}
           {product.isBestseller && (
-            <span className="bg-amber-100/95 backdrop-blur-xs text-amber-900 border border-amber-300/80 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full shadow-soft-sm w-fit">
+            <span className="bg-amber-100/95 text-amber-900 border border-amber-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-soft-sm whitespace-nowrap">
               বেস্টসেলার ✨
             </span>
           )}
           {product.isNew && (
-            <span className="bg-emerald-100/95 backdrop-blur-xs text-emerald-900 border border-emerald-300/80 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full shadow-soft-sm w-fit">
+            <span className="bg-emerald-100/95 text-emerald-900 border border-emerald-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-soft-sm whitespace-nowrap">
               নতুন কালেকশন
             </span>
           )}
@@ -71,14 +71,14 @@ export default function ProductCard({ product, onQuickView }) {
         {/* Wishlist Heart Button */}
         <button
           onClick={handleWishlist}
-          className={`absolute top-2.5 right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 z-10 ${
+          className={`absolute top-2.5 right-2.5 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 z-10 ${
             isFavorite
               ? 'bg-primary text-white shadow-soft'
               : 'bg-white/90 text-main-muted hover:text-primary hover:bg-white shadow-sm'
           }`}
           aria-label="Add to wishlist"
         >
-          <Heart size={14} className={isFavorite ? 'fill-white sm:w-4 sm:h-4' : 'sm:w-4 sm:h-4'} />
+          <Heart size={15} className={isFavorite ? 'fill-white' : ''} />
         </button>
 
         {/* Quick View Button Hover Overlay */}
@@ -97,19 +97,19 @@ export default function ProductCard({ product, onQuickView }) {
       </div>
 
       {/* Product Content Details */}
-      <div className="p-3 sm:p-4 flex flex-col flex-1 justify-between gap-2 sm:gap-3">
+      <div className="p-3 sm:p-4 flex flex-col flex-1 justify-between gap-2.5 sm:gap-3">
         <div>
           {/* Category & Rating */}
           <div className="flex items-center justify-between gap-1.5 mb-1 min-w-0">
-            <span className="text-[10px] sm:text-[11px] font-medium text-main-subtle truncate uppercase tracking-wider min-w-0">
+            <span className="text-[11px] font-medium text-main-subtle truncate max-w-[55%]">
               {product.categoryName}
             </span>
             <div className="shrink-0">
-              <div className="hidden sm:block">
+              <div className="hidden lg:block">
                 <RatingStars rating={product.rating} count={product.reviewsCount} size={12} />
               </div>
-              <div className="block sm:hidden">
-                <RatingStars rating={product.rating} count={product.reviewsCount} compact={true} />
+              <div className="block lg:hidden">
+                <RatingStars rating={product.rating} count={product.reviewsCount} compact />
               </div>
             </div>
           </div>
@@ -126,10 +126,10 @@ export default function ProductCard({ product, onQuickView }) {
         </div>
 
         {/* Price & Add to Cart Action */}
-        <div className="pt-2 sm:pt-2.5 border-t border-border-subtle flex items-center justify-between gap-1.5 sm:gap-2 mt-auto">
-          <div className="flex flex-col min-w-0 shrink">
-            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
-              <span className="font-bold text-sm sm:text-base md:text-lg text-primary whitespace-nowrap leading-tight">
+        <div className="pt-2 sm:pt-2.5 border-t border-border-subtle flex items-center justify-between gap-1.5 sm:gap-2">
+          <div className="flex flex-col min-w-0">
+            <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+              <span className="font-bold text-sm sm:text-base md:text-lg text-primary whitespace-nowrap">
                 {formatBengaliPrice(product.price)}
               </span>
               {product.originalPrice && (
@@ -142,23 +142,23 @@ export default function ProductCard({ product, onQuickView }) {
 
           <button
             onClick={handleAddToCart}
-            className={`h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 shrink-0 whitespace-nowrap ${
+            className={`shrink-0 rounded-full font-semibold flex items-center justify-center transition-all duration-200 shadow-soft-sm ${
               isAdded
-                ? 'bg-accent-green text-white scale-95'
-                : 'bg-primary-light hover:bg-primary text-primary hover:text-white active:scale-95'
+                ? 'bg-accent-green text-white p-2 sm:px-3 sm:py-1.5 text-xs'
+                : 'bg-primary-light hover:bg-primary text-primary hover:text-white p-2 sm:px-3 sm:py-1.5 text-xs'
             }`}
-            aria-label={isAdded ? 'কার্টে যুক্ত হয়েছে' : 'কার্টে যোগ করুন'}
+            aria-label={isAdded ? 'কার্টে যুক্ত হয়েছে' : 'কার্টে নিন'}
             title={isAdded ? 'কার্টে যুক্ত হয়েছে' : 'কার্টে যোগ করুন'}
           >
             {isAdded ? (
               <>
                 <Check size={14} className="shrink-0" />
-                <span className="hidden sm:inline">যুক্ত হয়েছে</span>
+                <span className="hidden sm:inline whitespace-nowrap ml-1 font-medium">যুক্ত হয়েছে</span>
               </>
             ) : (
               <>
                 <ShoppingBag size={14} className="shrink-0" />
-                <span className="hidden sm:inline">কার্টে নিন</span>
+                <span className="hidden sm:inline whitespace-nowrap ml-1 font-medium">কার্টে নিন</span>
               </>
             )}
           </button>

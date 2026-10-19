@@ -158,12 +158,12 @@ export default function ProductDetailPageView({ productId }) {
               <p className="text-xs text-main-subtle font-sans mt-0.5">{product.englishName}</p>
 
               {/* Price */}
-              <div className="flex items-baseline gap-3 mt-4 flex-wrap">
-                <span className="text-3xl font-bold text-primary whitespace-nowrap">
+              <div className="flex items-baseline gap-3 mt-4">
+                <span className="text-3xl font-bold text-primary">
                   {formatBengaliPrice(product.price)}
                 </span>
                 {product.originalPrice && (
-                  <span className="text-base text-main-subtle line-through whitespace-nowrap">
+                  <span className="text-base text-main-subtle line-through">
                     {formatBengaliPrice(product.originalPrice)}
                   </span>
                 )}
@@ -297,7 +297,7 @@ export default function ProductDetailPageView({ productId }) {
         {/* Related Bouquets */}
         <div className="pt-12 border-t border-border-subtle space-y-6">
           <h2 className="text-2xl font-bold text-main-text">আরও কিছু সুন্দর তোড়া</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {relatedProducts.map((rel) => (
               <ProductCard
                 key={rel.id}

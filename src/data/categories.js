@@ -6,7 +6,7 @@ export const CATEGORIES = [
     englishName: 'All Flowers',
     icon: '🌸',
     count: 24,
-    image: '/images/products/midnight-romance.jpg',
+    image: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=800&auto=format&fit=crop',
     description: 'আমাদের সমস্ত এক্সক্লুসিভ ফুলের সমাহার'
   },
   {
@@ -16,7 +16,7 @@ export const CATEGORIES = [
     englishName: 'Roses',
     icon: '🌹',
     count: 8,
-    image: '/images/products/red-rose-love.jpg',
+    image: '/images/products/midnight-romance.jpg',
     description: 'ডাচ ও লোকাল প্রিমিয়াম লাল, সাদা ও গোলাপি গোলাপ'
   },
   {
@@ -26,7 +26,7 @@ export const CATEGORIES = [
     englishName: 'Lilies',
     icon: '🌺',
     count: 5,
-    image: '/images/products/white-lily-elegance.jpg',
+    image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=800&auto=format&fit=crop',
     description: 'সুগন্ধি এশিয়াটিক ও ওরিয়েন্টাল লিলি'
   },
   {
@@ -36,7 +36,7 @@ export const CATEGORIES = [
     englishName: 'Tulips',
     icon: '🌷',
     count: 4,
-    image: '/images/products/royal-tulip-charm.jpg',
+    image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?q=80&w=800&auto=format&fit=crop',
     description: 'নেদারল্যান্ডস থেকে আমদানিকৃত তাজা টিউলিপ'
   },
   {
@@ -46,7 +46,7 @@ export const CATEGORIES = [
     englishName: 'Sunflowers',
     icon: '🌻',
     count: 4,
-    image: '/images/products/sunshine-bouquet.jpg',
+    image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?q=80&w=800&auto=format&fit=crop',
     description: 'উজ্জ্বল ও সতেজ সোনালী সূর্যমুখী তোড়া'
   },
   {
@@ -56,7 +56,7 @@ export const CATEGORIES = [
     englishName: 'Hand Bouquets',
     icon: '💐',
     count: 12,
-    image: '/images/products/midnight-romance.jpg',
+    image: 'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?q=80&w=800&auto=format&fit=crop',
     description: 'দক্ষ ফ্লোরিস্টদের হাতে তৈরি মনোমুগ্ধকর তোড়া'
   },
   {
@@ -66,7 +66,7 @@ export const CATEGORIES = [
     englishName: 'Gift Combos',
     icon: '🎁',
     count: 6,
-    image: '/images/products/sweet-blush-combo.jpg',
+    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=800&auto=format&fit=crop',
     description: 'ফুল, প্রিমিয়াম চকলেট ও সুবাসিত মোমবাতির প্যাকেজ'
   },
   {
@@ -76,7 +76,7 @@ export const CATEGORIES = [
     englishName: 'Luxury Bloom Box',
     icon: '✨',
     count: 7,
-    image: '/images/products/pastel-peony-box.jpg',
+    image: 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=800&auto=format&fit=crop',
     description: 'ভেলভেট ও অ্যাক্রিলিক লাক্সারি ফ্লাওয়ার বক্স'
   }
 ];

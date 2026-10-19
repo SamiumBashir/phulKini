@@ -45,7 +45,7 @@ export default function FeaturedBouquets() {
         </div>
 
         {/* Product Grid (4 columns on desktop, 3 on tablet, 2 on mobile) */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {featuredProducts.map((product) => (
             <ProductCard
               key={product.id}

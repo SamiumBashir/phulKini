@@ -6,7 +6,7 @@ export const BUILDER_OPTIONS = {
       name: 'রক্তিম ডাচ গোলাপ',
       englishName: 'Dutch Red Rose',
       pricePerStem: 120,
-      image: '/images/products/red-rose-love.jpg',
+      image: '/images/products/midnight-romance.jpg',
       color: '#B22222',
       tag: 'জনপ্রিয়'
     },
