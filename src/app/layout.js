@@ -1,4 +1,5 @@
 import './globals.css';
+import { Hind_Siliguri, Plus_Jakarta_Sans } from 'next/font/google';
 import { ToastProvider } from '@/context/ToastContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { CartProvider } from '@/context/CartContext';
@@ -8,6 +9,20 @@ import Navbar from '@/components/common/Navbar';
 import Footer from '@/components/common/Footer';
 import MobileBottomNav from '@/components/common/MobileBottomNav';
 import CartDrawer from '@/components/cart/CartDrawer';
+
+const hindSiliguri = Hind_Siliguri({
+  subsets: ['bengali', 'latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-hind-siliguri',
+  display: 'swap',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+});
 
 export const metadata = {
   title: 'ফুল কিনি (Phul Kini) | ভালোবাসা হোক ফুলের ভাষায় — প্রিমিয়াম ফ্লোরাল বুটিক',
@@ -29,11 +44,14 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="bn" className="notranslate" translate="no" suppressHydrationWarning>
+    <html
+      lang="bn"
+      className={`${hindSiliguri.variable} ${plusJakartaSans.variable} notranslate`}
+      translate="no"
+      suppressHydrationWarning
+    >
       <head>
         <meta name="google" content="notranslate" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body
         suppressHydrationWarning

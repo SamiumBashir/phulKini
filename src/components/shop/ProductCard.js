@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { formatBengaliPrice, toBengaliNumber } from '@/utils/bengaliUtils';
@@ -116,7 +117,15 @@ export default function ProductCard({ product, onQuickView }) {
 
           {/* Title */}
           <h3 className="font-bold text-sm sm:text-base text-main-text group-hover:text-primary transition-colors leading-snug line-clamp-1">
-            {product.name}
+            <Link
+              href={`/product/${product.slug || product.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="hover:underline focus:outline-none"
+            >
+              {product.name}
+            </Link>
           </h3>
 
           {/* Short Description */}

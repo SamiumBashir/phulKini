@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, Sparkles, Truck, ShieldCheck, Heart, Star, Flower2 } from 'lucide-react';
 import { toBengaliNumber } from '@/utils/bengaliUtils';
 
@@ -96,14 +97,18 @@ export default function HeroSection() {
               
               {/* Main Bouquet Card */}
               <div className="relative rounded-[28px] overflow-hidden border-2 border-border-muted bg-surface-white shadow-soft-xl group">
-                <img
-                  src="/images/products/midnight-romance.jpg"
-                  alt="Phul Kini Signature Bouquet"
-                  className="w-full aspect-[4/5] object-cover transition-transform duration-700 group-hover:scale-105"
-                  priority="true"
-                />
+                <div className="relative w-full aspect-[4/5]">
+                  <Image
+                    src="/images/products/midnight-romance.jpg"
+                    alt="মিডনাইট রোমান্স সিগনেচার তোড়া — ফুল কিনি"
+                    fill
+                    priority
+                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 50vw, 480px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                </div>
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
 
                 <div className="absolute bottom-5 left-5 right-5 text-white">
                   <span className="text-[11px] bg-primary/90 text-primary-light px-2.5 py-0.5 rounded-full uppercase tracking-wider font-semibold font-sans">

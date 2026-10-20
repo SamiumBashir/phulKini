@@ -135,7 +135,11 @@ export default function ProductDetailPageView({ productId }) {
                         : 'border-border-subtle opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img src={img} alt="thumb" className="w-full h-full object-cover" />
+                    <img
+                      src={img}
+                      alt={`${product.name || 'ফুলের তোড়া'} ছবি ${toBengaliNumber(idx + 1)}`}
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>

@@ -3,6 +3,7 @@ import ProductDetailPageView from '@/components/shop/ProductDetailPageView';
 import { getProductBySlug } from '@/server/products/getProductBySlug';
 import { PRODUCTS } from '@/data/products';
 import { SITE_CONFIG } from '@/lib/config/siteConfig';
+import { getProductAvailability } from '@/utils/productUtils';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -45,7 +46,7 @@ export default async function ProductPage({ params }) {
     name: product.name,
     image: imageUrl ? [imageUrl] : [],
     description: product.shortDescription || product.description,
-    sku: `PK-${product.slug}`,
+    sku: `PK-${product.slug || product.id}`,
     brand: {
       '@type': 'Brand',
       name: 'ফুল কিনি (Phul Kini)'
@@ -55,7 +56,7 @@ export default async function ProductPage({ params }) {
       url: productUrl,
       priceCurrency: 'BDT',
       price: product.price,
-      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      availability: getProductAvailability(product),
       seller: {
         '@type': 'Organization',
         name: 'ফুল কিনি (Phul Kini)'

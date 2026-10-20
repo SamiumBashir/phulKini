@@ -2,11 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
-
 :root {
-  --font-hind-siliguri: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
-  --font-plus-jakarta: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-hind-siliguri: var(--font-hind-siliguri), 'Noto Sans Bengali', sans-serif;
+  --font-plus-jakarta: var(--font-plus-jakarta), 'Inter', sans-serif;
   --color-primary: #610000;
   --color-primary-dark: #4A0000;
   --color-bg: #FCF9F8;

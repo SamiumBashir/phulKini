@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -36,6 +36,24 @@ export default function ProductDetailModal({ product, onClose }) {
   const [giftMessage, setGiftMessage] = useState('');
   const [senderName, setSenderName] = useState('');
   const [isAdded, setIsAdded] = useState(false);
+
+  // Keyboard navigation & body scroll lock
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
 
   if (!product) return null;
 
@@ -76,7 +94,13 @@ export default function ProductDetailModal({ product, onClose }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fade-in font-bengali">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="product-modal-title"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fade-in font-bengali"
+      onClick={onClose}
+    >
       <div
         className="relative bg-surface-white border border-border-muted rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-soft-xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
@@ -143,7 +167,11 @@ export default function ProductDetailModal({ product, onClose }) {
                         : 'border-border-subtle opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img src={img} alt="thumbnail" className="w-full h-full object-cover" />
+                    <img
+                      src={img}
+                      alt={`${product.name} থাম্বনেইল ${toBengaliNumber(idx + 1)}`}
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -178,7 +206,7 @@ export default function ProductDetailModal({ product, onClose }) {
               </div>
 
               {/* Title & English Subtitle */}
-              <h2 className="text-2xl sm:text-3xl font-bold text-main-text mt-2 leading-tight">
+              <h2 id="product-modal-title" className="text-2xl sm:text-3xl font-bold text-main-text mt-2 leading-tight">
                 {product.name}
               </h2>
               <p className="text-xs text-main-subtle font-sans tracking-wide mt-0.5">

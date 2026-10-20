@@ -2,13 +2,14 @@
   "name": "phul-kini",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node src/scripts/seed.js",
-    "test": "node src/scripts/test-security.js"
+    "seed": "node --env-file=.env.local src/scripts/seed.js",
+    "test": "node --env-file=.env.local src/scripts/test-security.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -41,6 +41,11 @@ export default function AdminDashboard({ user, onLogout }) {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState(null);
+  const [productsError, setProductsError] = useState(null);
+  const [ordersError, setOrdersError] = useState(null);
+  const [totalOrdersCount, setTotalOrdersCount] = useState(0);
+  const [isLoadingMoreOrders, setIsLoadingMoreOrders] = useState(false);
 
   // Filters & Modals
   const [productSearch, setProductSearch] = useState('');
@@ -48,23 +53,73 @@ export default function AdminDashboard({ user, onLogout }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // Fetch Dashboard Data
+  // Fault-Tolerant Fetch Dashboard Data using Promise.allSettled
   const fetchDashboardData = async () => {
     setIsLoading(true);
+    setAnalyticsError(null);
+    setProductsError(null);
+    setOrdersError(null);
+
     try {
-      const [analyticsRes, productsRes, ordersRes] = await Promise.all([
-        fetch('/api/admin/analytics').then(r => r.json()),
-        fetch('/api/products?limit=100').then(r => r.json()),
-        fetch('/api/orders?limit=100').then(r => r.json())
+      const results = await Promise.allSettled([
+        fetch('/api/admin/analytics').then(async (r) => {
+          if (!r.ok) throw new Error('অ্যানালিটিক্স লোড করা সম্ভব হয়নি');
+          return r.json();
+        }),
+        fetch('/api/products?limit=100').then(async (r) => {
+          if (!r.ok) throw new Error('পণ্য তালিকা লোড করা সম্ভব হয়নি');
+          return r.json();
+        }),
+        fetch('/api/orders?limit=25&skip=0').then(async (r) => {
+          if (!r.ok) throw new Error('অর্ডার তালিকা লোড করা সম্ভব হয়নি');
+          return r.json();
+        })
       ]);
 
-      if (analyticsRes.success) setStats(analyticsRes.stats);
-      if (productsRes.success) setProducts(productsRes.products);
-      if (ordersRes.success) setOrders(ordersRes.orders);
+      // 1. Analytics
+      if (results[0].status === 'fulfilled' && results[0].value?.success) {
+        setStats(results[0].value.stats);
+      } else {
+        setAnalyticsError(results[0].reason?.message || 'অ্যানালিটিক্স ডেটা পাওয়া যায়নি');
+      }
+
+      // 2. Products
+      if (results[1].status === 'fulfilled' && results[1].value?.success) {
+        setProducts(results[1].value.products || []);
+      } else {
+        setProductsError(results[1].reason?.message || 'পণ্য ডেটা পাওয়া যায়নি');
+      }
+
+      // 3. Orders
+      if (results[2].status === 'fulfilled' && results[2].value?.success) {
+        setOrders(results[2].value.orders || []);
+        setTotalOrdersCount(results[2].value.total || (results[2].value.orders || []).length);
+      } else {
+        setOrdersError(results[2].reason?.message || 'অর্ডার ডেটা পাওয়া যায়নি');
+      }
     } catch (e) {
       console.error('Error fetching admin data:', e);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Load More Orders (Pagination)
+  const handleLoadMoreOrders = async () => {
+    setIsLoadingMoreOrders(true);
+    try {
+      const skip = orders.length;
+      const statusParam = orderStatusFilter !== 'ALL' ? `&status=${orderStatusFilter}` : '';
+      const res = await fetch(`/api/orders?limit=25&skip=${skip}${statusParam}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) {
+        setOrders((prev) => [...prev, ...data.orders]);
+        setTotalOrdersCount(data.total || (orders.length + data.orders.length));
+      }
+    } catch (e) {
+      addToast('অতিরিক্ত অর্ডার লোড করা সম্ভব হয়নি', 'error');
+    } finally {
+      setIsLoadingMoreOrders(false);
     }
   };
 
@@ -469,6 +524,26 @@ export default function AdminDashboard({ user, onLogout }) {
                   </tbody>
                 </table>
               </div>
+
+              {/* Load More Pagination & Orders Error */}
+              {ordersError && (
+                <div className="p-4 bg-amber-50 border-t border-amber-200 text-amber-800 text-xs flex items-center justify-between">
+                  <span>⚠️ {ordersError}</span>
+                  <button onClick={fetchDashboardData} className="underline font-bold cursor-pointer">পুনরায় চেষ্টা করুন</button>
+                </div>
+              )}
+
+              {orders.length < totalOrdersCount && (
+                <div className="p-4 border-t border-[#E8DDD9] bg-[#FCF9F8] text-center">
+                  <button
+                    onClick={handleLoadMoreOrders}
+                    disabled={isLoadingMoreOrders}
+                    className="btn-secondary-outline text-xs py-2 px-6 rounded-xl hover:bg-white transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    {isLoadingMoreOrders ? 'অর্ডার লোড হচ্ছে...' : `আরও অর্ডার দেখুন (${toBengaliNumber(orders.length)} / ${toBengaliNumber(totalOrdersCount)})`}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

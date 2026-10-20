@@ -213,6 +213,52 @@ async function runSecurityTests() {
   const invalidOrderResult = await validateSSLCommerzTransaction({ valId: 'val_123', tranId: 'NON_EXISTENT_ORDER' });
   assert(!invalidOrderResult.valid, 'Non-existent order verification rejected');
 
+  // ==========================================
+  // TEST SUITE 8: SCHEMA.ORG PRODUCT AVAILABILITY LOGIC
+  // ==========================================
+  console.log('\n📦 [8/8] Testing Schema.org Inventory Availability Derivation...');
+  const { getProductAvailability } = await import('../utils/productUtils.js');
+
+  // Case 1: inStock: true without numeric stock
+  assert(
+    getProductAvailability({ inStock: true }) === 'https://schema.org/InStock',
+    'Case 1: { inStock: true } -> InStock'
+  );
+
+  // Case 2: inStock: false without numeric stock
+  assert(
+    getProductAvailability({ inStock: false }) === 'https://schema.org/OutOfStock',
+    'Case 2: { inStock: false } -> OutOfStock'
+  );
+
+  // Case 3: Numeric stock > 0
+  assert(
+    getProductAvailability({ stock: 10 }) === 'https://schema.org/InStock',
+    'Case 3: { stock: 10 } -> InStock'
+  );
+
+  // Case 4: Numeric stock = 0
+  assert(
+    getProductAvailability({ stock: 0 }) === 'https://schema.org/OutOfStock',
+    'Case 4: { stock: 0 } -> OutOfStock'
+  );
+
+  // Case 5: Numeric stock = 0 with inStock: true (numeric priority)
+  assert(
+    getProductAvailability({ stock: 0, inStock: true }) === 'https://schema.org/OutOfStock',
+    'Case 5: { stock: 0, inStock: true } -> OutOfStock'
+  );
+
+  // Case 6: Missing inventory fields fallback
+  assert(
+    getProductAvailability({}) === 'https://schema.org/OutOfStock',
+    'Case 6: Missing inventory -> OutOfStock fallback'
+  );
+  assert(
+    getProductAvailability(null) === 'https://schema.org/OutOfStock',
+    'Case 6b: Null product -> OutOfStock fallback'
+  );
+
   console.log('\n' + '='.repeat(50));
   console.log(`🎯 Test Results Summary: ${passed} Passed, ${failed} Failed`);
   console.log('='.repeat(50) + '\n');

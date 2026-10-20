@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { BUILDER_OPTIONS } from '@/data/builderOptions';
 import { useCart } from '@/context/CartContext';
 import { formatBengaliPrice, toBengaliNumber } from '@/utils/bengaliUtils';
-import confetti from 'canvas-confetti';
 import {
   Sparkles,
   ArrowRight,
@@ -94,9 +93,10 @@ export default function CustomBouquetBuilder() {
     }
   };
 
-  const handleCompleteAndAddToCart = () => {
-    // Trigger festive confetti
+  const handleCompleteAndAddToCart = async () => {
+    // Trigger festive confetti dynamically
     try {
+      const confetti = (await import('canvas-confetti')).default;
       confetti({
         particleCount: 80,
         spread: 70,
@@ -110,7 +110,7 @@ export default function CustomBouquetBuilder() {
       categoryName: 'কাস্টম ডিজাইন',
       price: totalPrice,
       images: [
-        'https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?q=80&w=1000&auto=format&fit=crop'
+        '/images/products/midnight-romance.jpg'
       ],
       customBouquetConfig: {
         flowers: selectedFlowers,

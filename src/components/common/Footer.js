@@ -128,7 +128,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-[#C4B3AF]">
               <li>
-                <Link href="/order-confirmation" className="hover:text-white transition-colors">
+                <Link href="/track-order" className="hover:text-white transition-colors">
                   অর্ডার ট্র্যাকিং
                 </Link>
               </li>

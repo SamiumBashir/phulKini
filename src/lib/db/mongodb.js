@@ -13,6 +13,11 @@ if (!cached) {
 }
 
 export async function connectToDatabase() {
+  // Server-only development shortcut: fast-path fallback when local database is offline or mock mode requested
+  if (process.env.NODE_ENV !== 'production' && process.env.MOCK_DATABASE === 'true') {
+    throw new Error('MOCK_DATABASE is active in development. Using static fallback data.');
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -21,7 +26,7 @@ export async function connectToDatabase() {
     const opts = {
       bufferCommands: false,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: process.env.NODE_ENV === 'production' ? 10000 : 8000,
       socketTimeoutMS: 45000,
       autoIndex: process.env.NODE_ENV !== 'production'
     };

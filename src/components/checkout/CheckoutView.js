@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
 import { formatBengaliPrice, toBengaliNumber, DELIVERY_SLOTS } from '@/utils/bengaliUtils';
-import confetti from 'canvas-confetti';
 import {
   Truck,
   CreditCard,
@@ -149,8 +148,9 @@ export default function CheckoutView() {
       const data = await res.json();
 
       if (data.success && data.order) {
-        // Trigger celebratory confetti
+        // Trigger celebratory confetti dynamically
         try {
+          const confetti = (await import('canvas-confetti')).default;
           confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
         } catch (e) {}
 

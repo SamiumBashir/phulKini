@@ -3,7 +3,12 @@ import OrderConfirmationView from '@/components/order/OrderConfirmationView';
 
 export const metadata = {
   title: 'অর্ডার নিশ্চিতকরণ ও ট্র্যাকিং | ফুল কিনি',
-  description: 'আপনার অর্ডারের রসিদ ও রিয়েল-টাইম ডেলিভারি ট্র্যাকিং স্ট্যাটাস।'
+  description: 'আপনার অর্ডারের রসিদ ও রিয়েল-টাইম ডেলিভারি ট্র্যাকিং স্ট্যাটাস।',
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  }
 };
 
 export default function OrderConfirmationPage() {
