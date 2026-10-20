@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Flower2, Heart, Sparkles, ShieldCheck, MapPin, Users, Award, ArrowRight } from 'lucide-react';
 import { toBengaliNumber } from '@/utils/bengaliUtils';
 
@@ -45,11 +46,13 @@ export default function AboutPage() {
           </div>
 
           <div className="lg:col-span-6 relative">
-            <div className="rounded-3xl overflow-hidden border-2 border-border-muted shadow-soft-lg">
-              <img
-                src="https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=1000&auto=format&fit=crop"
-                alt="Phul Kini Artisan Florist"
-                className="w-full aspect-[4/3] object-cover"
+            <div className="rounded-3xl overflow-hidden border-2 border-border-muted shadow-soft-lg relative aspect-[4/3]">
+              <Image
+                src="/images/products/white-lily-elegance.jpg"
+                alt="ফুল কিনি কারিগর ও ফ্লোরাল বুটিক"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
               />
             </div>
           </div>

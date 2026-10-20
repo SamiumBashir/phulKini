@@ -40,6 +40,15 @@ export async function initSSLCommerzPayment({ order, appUrl }) {
 
   const initUrl = `${BASE_URL}/gwprocess/v4/api.php`;
 
+  const deliveryName = order.delivery?.name || order.customer?.name || 'Phul Kini Customer';
+  const deliveryPhone = order.delivery?.phone || order.customer?.phone || '01700000000';
+  const deliveryAddress = order.delivery?.address || 'Dhaka, Bangladesh';
+  const deliveryCity = order.delivery?.city || 'Dhaka';
+  const deliveryArea = order.delivery?.area || deliveryCity;
+  const customerEmail = order.customer?.email || 'customer@phulkini.com';
+  const itemCount = (order.items && order.items.length > 0) ? order.items.length.toString() : '1';
+  const productName = order.items?.[0]?.nameSnapshot || order.items?.[0]?.name || 'Phul Kini Floral Arrangement';
+
   const payload = new URLSearchParams({
     store_id: STORE_ID,
     store_passwd: STORE_PASSWORD,
@@ -50,15 +59,32 @@ export async function initSSLCommerzPayment({ order, appUrl }) {
     fail_url: `${appUrl}/api/payments/sslcommerz/callback?status=fail&orderNumber=${order.orderNumber}`,
     cancel_url: `${appUrl}/api/payments/sslcommerz/callback?status=cancel&orderNumber=${order.orderNumber}`,
     ipn_url: `${appUrl}/api/payments/sslcommerz/ipn`,
-    cus_name: order.delivery.name || 'Phul Kini Customer',
-    cus_email: order.customer.email || 'customer@phulkini.com',
-    cus_add1: order.delivery.address || 'Dhaka',
-    cus_city: order.delivery.city || 'Dhaka',
+
+    // Customer Information
+    cus_name: deliveryName,
+    cus_email: customerEmail,
+    cus_add1: deliveryAddress,
+    cus_add2: deliveryArea,
+    cus_city: deliveryCity,
+    cus_state: deliveryArea,
+    cus_postcode: '1200',
     cus_country: 'Bangladesh',
-    cus_phone: order.delivery.phone || '01700000000',
-    shipping_method: 'COURIER',
-    num_of_item: order.items.length.toString(),
-    product_name: 'Phul Kini Flowers',
+    cus_phone: deliveryPhone,
+    cus_fax: deliveryPhone,
+
+    // Shipment Information (Strictly required by SSLCOMMERZ when shipping_method != 'NO')
+    shipping_method: 'Courier',
+    num_of_item: itemCount,
+    ship_name: deliveryName,
+    ship_add1: deliveryAddress,
+    ship_add2: deliveryArea,
+    ship_city: deliveryCity,
+    ship_state: deliveryArea,
+    ship_postcode: '1200',
+    ship_country: 'Bangladesh',
+
+    // Product Details
+    product_name: productName,
     product_category: 'Boutique Florist',
     product_profile: 'general'
   });
